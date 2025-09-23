@@ -173,6 +173,7 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
 
   const updateProfile = async (newProfileData: Partial<StudentProfile>) => {
     const updatedProfile = profile ? { ...profile, ...newProfileData } : {
+    }
     const updatedProfile = profile ? { ...profile, ...newProfileData } : {
       gpa: 0,
       satEBRW: 0,
