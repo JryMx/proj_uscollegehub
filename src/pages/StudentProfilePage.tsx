@@ -10,6 +10,7 @@ const StudentProfilePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'academic' | 'non-academic'>('academic');
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
+  const [currentCalculatedScore, setCurrentCalculatedScore] = useState<number>(0);
 
   // Application Components Checker
   const [applicationComponents, setApplicationComponents] = useState<ApplicationComponents>(
@@ -115,7 +116,7 @@ const StudentProfilePage: React.FC = () => {
     setRecommendationLetters(prev => prev.filter(letter => letter.id !== id));
   };
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     const profileData = {
       gpa: parseFloat(academicData.gpa) || 0,
       satEBRW: parseInt(academicData.satEBRW) || 0,
@@ -137,7 +138,7 @@ const StudentProfilePage: React.FC = () => {
       awards: [],
     };
 
-    updateProfile(profileData);
+    await updateProfile(profileData);
     setShowResults(true);
   };
 
@@ -159,19 +160,37 @@ const StudentProfilePage: React.FC = () => {
     }
   };
 
-  const currentScore = calculateProfileScore({
-    ...academicData,
-    ...nonAcademicData,
-    extracurriculars,
-    recommendationLetters,
-    gpa: parseFloat(academicData.gpa) || 0,
-    satEBRW: parseInt(academicData.satEBRW) || 0,
-    satMath: parseInt(academicData.satMath) || 0,
-    actScore: parseInt(academicData.actScore) || 0,
-    apCourses: parseInt(academicData.apCourses) || 0,
-    ibScore: parseInt(academicData.ibScore) || 0,
-    toeflScore: parseInt(academicData.toeflScore) || 0,
-  });
+  // Calculate current score whenever form data changes
+  React.useEffect(() => {
+    const calculateCurrentScore = async () => {
+      try {
+        const score = await calculateProfileScore({
+          ...academicData,
+          ...nonAcademicData,
+          extracurriculars,
+          recommendationLetters,
+          gpa: parseFloat(academicData.gpa) || 0,
+          satEBRW: parseInt(academicData.satEBRW) || 0,
+          satMath: parseInt(academicData.satMath) || 0,
+          actScore: parseInt(academicData.actScore) || 0,
+          apCourses: parseInt(academicData.apCourses) || 0,
+          ibScore: parseInt(academicData.ibScore) || 0,
+          toeflScore: parseInt(academicData.toeflScore) || 0,
+        });
+        setCurrentCalculatedScore(score);
+      } catch (error) {
+        console.error('Error calculating current score:', error);
+        setCurrentCalculatedScore(0);
+      }
+    };
+
+    // Only calculate if we have some data
+    if (Object.values(academicData).some(v => v) || Object.values(nonAcademicData).some(v => v)) {
+      calculateCurrentScore();
+    } else {
+      setCurrentCalculatedScore(0);
+    }
+  }, [academicData, nonAcademicData, extracurriculars, recommendationLetters, calculateProfileScore]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -196,12 +215,12 @@ const StudentProfilePage: React.FC = () => {
         {(profile || Object.values(academicData).some(v => v) || Object.values(nonAcademicData).some(v => v)) && (
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-lg mb-8 text-center">
             <h2 className="text-2xl font-bold mb-2">Profile Rigor Score</h2>
-            <div className="text-5xl font-bold mb-2">{currentScore}/100</div>
+            <div className="text-5xl font-bold mb-2">{currentCalculatedScore}/100</div>
             <p className="text-blue-100">
-              {currentScore >= 90 ? 'Excellent' : 
-               currentScore >= 80 ? 'Very Good' : 
-               currentScore >= 70 ? 'Good' : 
-               currentScore >= 60 ? 'Fair' : 'Needs Improvement'}
+              {currentCalculatedScore >= 90 ? 'Excellent' : 
+               currentCalculatedScore >= 80 ? 'Very Good' : 
+               currentCalculatedScore >= 70 ? 'Good' : 
+               currentCalculatedScore >= 60 ? 'Fair' : 'Needs Improvement'}
             </p>
           </div>
         )}
@@ -854,7 +873,7 @@ const StudentProfilePage: React.FC = () => {
                     </div>
                     <div>
                       <span className="font-medium text-gray-600">Your Score:</span>
-                      <span className="ml-2 font-bold">{currentScore}/100</span>
+                      <span className="ml-2 font-bold">{currentCalculatedScore}/100</span>
                     </div>
                     <div>
                       <span className="font-medium text-gray-600">Ratio:</span>

@@ -171,7 +171,7 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
     return Math.round(Math.min(score, 100));
   };
 
-  const updateProfile = (newProfileData: Partial<StudentProfile>) => {
+  const updateProfile = async (newProfileData: Partial<StudentProfile>) => {
     const updatedProfile = profile ? { ...profile, ...newProfileData } : {
       gpa: 0,
       satEBRW: 0,
@@ -219,16 +219,22 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
       ...newProfileData.applicationComponents,
     };
     
-    // Calculate profile rigor score asynchronously
-    calculateProfileScore(updatedProfile).then(score => {
+    try {
+      // Calculate profile rigor score and wait for it to complete
+      const score = await calculateProfileScore(updatedProfile);
       updatedProfile.profileRigorScore = score;
-      setProfile({ ...updatedProfile });
-    });
-    
-    // Generate recommendations
-    updatedProfile.recommendations = generateRecommendations(updatedProfile);
-    
-    setProfile(updatedProfile);
+      
+      // Generate recommendations after score is calculated
+      updatedProfile.recommendations = generateRecommendations(updatedProfile);
+      
+      // Update profile with calculated score and recommendations
+      setProfile(updatedProfile);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      // Still update profile even if score calculation fails
+      updatedProfile.recommendations = generateRecommendations(updatedProfile);
+      setProfile(updatedProfile);
+    }
   };
 
   const generateRecommendations = (profile: StudentProfile): SchoolRecommendation[] => {
