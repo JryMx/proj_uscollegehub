@@ -1,5 +1,10 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
+// API base URL - adjust for your backend deployment
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://your-backend-url.com/api' 
+  : 'http://localhost:5000/api';
+
 export interface StudentProfile {
   // Academic Inputs
   gpa: number;
@@ -121,81 +126,46 @@ const schoolsDatabase = [
 export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ children }) => {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
 
-  const calculateProfileScore = (profileData: Partial<StudentProfile>): number => {
+  const calculateProfileScore = async (profileData: Partial<StudentProfile>): Promise<number> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/calculate-profile-score`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(profileData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to calculate profile score');
+      }
+      
+      const data = await response.json();
+      return data.rigor_score;
+    } catch (error) {
+      console.error('Error calculating profile score:', error);
+      // Fallback to local calculation if backend is unavailable
+      return calculateLocalProfileScore(profileData);
+    }
+  };
+
+  const calculateLocalProfileScore = (profileData: Partial<StudentProfile>): number => {
+    // Fallback local calculation (simplified version)
     let score = 0;
     
-    // Academic Inputs (60% weight)
-    // GPA (25% of total)
     if (profileData.gpa) {
       score += (profileData.gpa / 4.0) * 25;
     }
     
-    // SAT Scores (20% of total)
     if (profileData.satEBRW && profileData.satMath) {
       const totalSAT = profileData.satEBRW + profileData.satMath;
       score += (totalSAT / 1600) * 20;
     } else if (profileData.actScore) {
-      // Convert ACT to equivalent weight
       score += (profileData.actScore / 36) * 20;
     }
     
-    // AP/IB Courses (15% of total)
     if (profileData.apCourses) {
       score += Math.min(profileData.apCourses / 8, 1) * 15;
-    }
-    if (profileData.ibScore) {
-      score += (profileData.ibScore / 45) * 15;
-    }
-    
-    // Non-Academic Inputs (40% weight)
-    // Extracurricular Activities (20% of total)
-    if (profileData.extracurriculars && profileData.extracurriculars.length > 0) {
-      let extracurricularScore = 0;
-      profileData.extracurriculars.forEach(activity => {
-        let activityScore = 2; // Base score
-        
-        // Recognition level bonus
-        switch (activity.recognitionLevel) {
-          case 'International': activityScore += 4; break;
-          case 'National': activityScore += 3; break;
-          case 'Regional': activityScore += 2; break;
-          case 'Local': activityScore += 1; break;
-        }
-        
-        // Duration bonus (simplified)
-        if (activity.hoursPerWeek >= 10) activityScore += 2;
-        else if (activity.hoursPerWeek >= 5) activityScore += 1;
-        
-        extracurricularScore += activityScore;
-      });
-      
-      score += Math.min(extracurricularScore / 30, 1) * 20;
-    }
-    
-    // Personal Statement (10% of total)
-    if (profileData.personalStatement && profileData.personalStatement.length > 200) {
-      score += 10;
-    } else if (profileData.personalStatement && profileData.personalStatement.length > 100) {
-      score += 7;
-    } else if (profileData.personalStatement) {
-      score += 5;
-    }
-    
-    // Recommendation Letters (5% of total)
-    if (profileData.recommendationLetters && profileData.recommendationLetters.length >= 2) {
-      score += 5;
-    } else if (profileData.recommendationLetters && profileData.recommendationLetters.length >= 1) {
-      score += 3;
-    }
-    
-    // Legacy Status (3% of total)
-    if (profileData.legacyStatus) {
-      score += 3;
-    }
-    
-    // TOEFL for international students (2% of total)
-    if (profileData.citizenship === 'international' && profileData.toeflScore) {
-      score += (profileData.toeflScore / 120) * 2;
     }
     
     return Math.round(Math.min(score, 100));
@@ -249,8 +219,11 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
       ...newProfileData.applicationComponents,
     };
     
-    // Calculate profile rigor score
-    updatedProfile.profileRigorScore = calculateProfileScore(updatedProfile);
+    // Calculate profile rigor score asynchronously
+    calculateProfileScore(updatedProfile).then(score => {
+      updatedProfile.profileRigorScore = score;
+      setProfile({ ...updatedProfile });
+    });
     
     // Generate recommendations
     updatedProfile.recommendations = generateRecommendations(updatedProfile);
@@ -299,15 +272,42 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
     });
   };
 
-  const searchSchools = (query: string): SchoolSearchResult[] => {
+  const searchSchools = async (query: string): Promise<SchoolSearchResult[]> => {
     if (!profile || !query.trim()) return [];
     
+    try {
+      const response = await fetch(`${API_BASE_URL}/search-schools`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query,
+          student_data: profile,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to search schools');
+      }
+      
+      const data = await response.json();
+      return data.results;
+    } catch (error) {
+      console.error('Error searching schools:', error);
+      // Fallback to local search if backend is unavailable
+      return searchSchoolsLocal(query);
+    }
+  };
+
+  const searchSchoolsLocal = (query: string): SchoolSearchResult[] => {
+    // Fallback local search
     const filteredSchools = schoolsDatabase.filter(school =>
       school.name.toLowerCase().includes(query.toLowerCase())
     );
 
     return filteredSchools.map(school => {
-      const comparisonRatio = profile.profileRigorScore / school.requiredScore;
+      const comparisonRatio = profile!.profileRigorScore / school.requiredScore;
       let category: 'safety' | 'target' | 'reach';
 
       if (comparisonRatio >= 1.1) {

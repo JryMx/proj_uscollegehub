@@ -143,11 +143,22 @@ const StudentProfilePage: React.FC = () => {
 
   const handleSearch = () => {
     if (searchQuery.trim() && profile) {
+      searchSchools(searchQuery).then(() => {
+        setShowResults(true);
+      });
+    }
+  };
+
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  
+  const handleSearchAsync = async () => {
+    if (searchQuery.trim() && profile) {
+      const results = await searchSchools(searchQuery);
+      setSearchResults(results);
       setShowResults(true);
     }
   };
 
-  const searchResults = searchQuery.trim() ? searchSchools(searchQuery) : [];
   const currentScore = calculateProfileScore({
     ...academicData,
     ...nonAcademicData,
@@ -801,7 +812,7 @@ const StudentProfilePage: React.FC = () => {
               />
             </div>
             <button
-              onClick={handleSearch}
+              onClick={handleSearchAsync}
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
             >
               Search
