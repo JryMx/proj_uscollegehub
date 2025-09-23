@@ -23,9 +23,26 @@ export interface StudentProfile {
   awards: string[];
   intendedMajor: string;
   
+  // Boolean Application Components Checker
+  applicationComponents: ApplicationComponents;
+  
   // Calculated fields
   profileRigorScore: number;
   recommendations: SchoolRecommendation[];
+}
+
+export interface ApplicationComponents {
+  secondarySchoolGPA: boolean;
+  classRank: boolean;
+  academicRecord: boolean;
+  collegePrepProgram: boolean;
+  recommendationLetters: boolean;
+  formalDemonstrationCompetencies: boolean;
+  workExperience: boolean;
+  personalStatementEssay: boolean;
+  legacyStatus: boolean;
+  admissionTestScores: boolean;
+  englishProficiencyTest: boolean;
 }
 
 export interface ExtracurricularActivity {
@@ -202,9 +219,34 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
       volunteering: [],
       awards: [],
       intendedMajor: '',
+      applicationComponents: {
+        secondarySchoolGPA: false,
+        classRank: false,
+        academicRecord: false,
+        collegePrepProgram: false,
+        recommendationLetters: false,
+        formalDemonstrationCompetencies: false,
+        workExperience: false,
+        personalStatementEssay: false,
+        legacyStatus: false,
+        admissionTestScores: false,
+        englishProficiencyTest: false,
+      },
       profileRigorScore: 0,
       recommendations: [],
       ...newProfileData,
+    };
+    
+    // Auto-update application components based on profile data
+    updatedProfile.applicationComponents = {
+      ...updatedProfile.applicationComponents,
+      secondarySchoolGPA: updatedProfile.gpa > 0,
+      recommendationLetters: updatedProfile.recommendationLetters.length > 0,
+      personalStatementEssay: updatedProfile.personalStatement.length > 0,
+      legacyStatus: updatedProfile.legacyStatus,
+      admissionTestScores: (updatedProfile.satEBRW > 0 && updatedProfile.satMath > 0) || updatedProfile.actScore > 0,
+      englishProficiencyTest: updatedProfile.citizenship === 'international' ? updatedProfile.toeflScore > 0 : true,
+      ...newProfileData.applicationComponents,
     };
     
     // Calculate profile rigor score

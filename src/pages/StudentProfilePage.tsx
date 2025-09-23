@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, BookOpen, Award, Target, ArrowRight, Plus, X, Search, Calculator } from 'lucide-react';
-import { useStudentProfile, ExtracurricularActivity, RecommendationLetter } from '../context/StudentProfileContext';
+import { User, BookOpen, Award, Target, ArrowRight, Plus, X, Search, Calculator, CheckCircle, XCircle, ClipboardList } from 'lucide-react';
+import { useStudentProfile, ExtracurricularActivity, RecommendationLetter, ApplicationComponents } from '../context/StudentProfileContext';
 
 const StudentProfilePage: React.FC = () => {
   const navigate = useNavigate();
@@ -10,6 +10,23 @@ const StudentProfilePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'academic' | 'non-academic'>('academic');
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
+
+  // Application Components Checker
+  const [applicationComponents, setApplicationComponents] = useState<ApplicationComponents>(
+    profile?.applicationComponents || {
+      secondarySchoolGPA: false,
+      classRank: false,
+      academicRecord: false,
+      collegePrepProgram: false,
+      recommendationLetters: false,
+      formalDemonstrationCompetencies: false,
+      workExperience: false,
+      personalStatementEssay: false,
+      legacyStatus: false,
+      admissionTestScores: false,
+      englishProficiencyTest: false,
+    }
+  );
 
   // Academic form data
   const [academicData, setAcademicData] = useState({
@@ -44,6 +61,10 @@ const StudentProfilePage: React.FC = () => {
 
   const handleNonAcademicChange = (field: string, value: string | boolean) => {
     setNonAcademicData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleApplicationComponentChange = (component: keyof ApplicationComponents, value: boolean) => {
+    setApplicationComponents(prev => ({ ...prev, [component]: value }));
   };
 
   const addExtracurricular = () => {
@@ -109,6 +130,7 @@ const StudentProfilePage: React.FC = () => {
       citizenship: nonAcademicData.citizenship as 'domestic' | 'international',
       extracurriculars,
       recommendationLetters,
+      applicationComponents,
       // Legacy fields for compatibility
       leadership: [],
       volunteering: [],
@@ -657,6 +679,109 @@ const StudentProfilePage: React.FC = () => {
               <Calculator className="h-4 w-4 mr-2" />
               Calculate Profile Score
             </button>
+          </div>
+        </div>
+
+        {/* Application Components Checker */}
+        <div className="bg-white rounded-lg shadow-sm mb-8">
+          <div className="p-6">
+            <div className="flex items-center mb-6">
+              <ClipboardList className="h-6 w-6 text-blue-600 mr-3" />
+              <h2 className="text-xl font-bold text-gray-900">Application Components Checklist</h2>
+            </div>
+            
+            <p className="text-gray-600 mb-6">
+              Check off the application components you have completed or possess. This helps track your application readiness.
+            </p>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { key: 'secondarySchoolGPA', label: 'Secondary School GPA', description: 'Official high school GPA' },
+                { key: 'classRank', label: 'Class Rank', description: 'Your ranking within graduating class' },
+                { key: 'academicRecord', label: 'Academic Record', description: 'Official transcripts and grades' },
+                { key: 'collegePrepProgram', label: 'College-Prep Program', description: 'Completion of college preparatory curriculum' },
+                { key: 'recommendationLetters', label: 'Recommendation Letters', description: 'Letters from teachers, counselors, etc.' },
+                { key: 'formalDemonstrationCompetencies', label: 'Demonstration of Competencies', description: 'Portfolio, auditions, or skill demonstrations' },
+                { key: 'workExperience', label: 'Work Experience', description: 'Part-time jobs, internships, or employment' },
+                { key: 'personalStatementEssay', label: 'Personal Statement/Essay', description: 'Common App essay or personal statement' },
+                { key: 'legacyStatus', label: 'Legacy Status', description: 'Family connection to the university' },
+                { key: 'admissionTestScores', label: 'Admission Test Scores', description: 'SAT, ACT, or other standardized tests' },
+                { key: 'englishProficiencyTest', label: 'English Proficiency Test', description: 'TOEFL, IELTS (for international students)' },
+              ].map((component) => (
+                <div
+                  key={component.key}
+                  className={`border rounded-lg p-4 transition-all duration-200 ${
+                    applicationComponents[component.key as keyof ApplicationComponents]
+                      ? 'border-green-200 bg-green-50'
+                      : 'border-gray-200 bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-start space-x-3">
+                    <button
+                      onClick={() => handleApplicationComponentChange(
+                        component.key as keyof ApplicationComponents,
+                        !applicationComponents[component.key as keyof ApplicationComponents]
+                      )}
+                      className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                        applicationComponents[component.key as keyof ApplicationComponents]
+                          ? 'border-green-500 bg-green-500 text-white'
+                          : 'border-gray-300 hover:border-green-400'
+                      }`}
+                    >
+                      {applicationComponents[component.key as keyof ApplicationComponents] && (
+                        <CheckCircle className="h-4 w-4" />
+                      )}
+                    </button>
+                    <div className="flex-1">
+                      <h3 className={`font-medium ${
+                        applicationComponents[component.key as keyof ApplicationComponents]
+                          ? 'text-green-800'
+                          : 'text-gray-900'
+                      }`}>
+                        {component.label}
+                      </h3>
+                      <p className={`text-sm mt-1 ${
+                        applicationComponents[component.key as keyof ApplicationComponents]
+                          ? 'text-green-600'
+                          : 'text-gray-600'
+                      }`}>
+                        {component.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Completion Summary */}
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-blue-900">Application Readiness</h3>
+                  <p className="text-blue-700 text-sm">
+                    {Object.values(applicationComponents).filter(Boolean).length} of {Object.keys(applicationComponents).length} components completed
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {Math.round((Object.values(applicationComponents).filter(Boolean).length / Object.keys(applicationComponents).length) * 100)}%
+                  </div>
+                  <div className="text-sm text-blue-600">Complete</div>
+                </div>
+              </div>
+              
+              {/* Progress Bar */}
+              <div className="mt-3">
+                <div className="w-full bg-blue-200 rounded-full h-2">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{
+                      width: `${(Object.values(applicationComponents).filter(Boolean).length / Object.keys(applicationComponents).length) * 100}%`
+                    }}
+                  ></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
