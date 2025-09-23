@@ -112,120 +112,22 @@ def get_university_data():
     
     return university_cache
 
-def calculate_enhanced_rigor_score(student_data: Dict[str, Any]) -> float:
-    """
-    Enhanced rigor score calculation that includes non-academic factors
-    Based on the frontend scoring but using backend precision
-    """
-    score = 0.0
-    
-    # Academic Inputs (60% weight)
-    # GPA (25% of total)
-    gpa = student_data.get('gpa', 0)
-    if gpa:
-        score += (gpa / 4.0) * 25
-    
-    # SAT Scores (20% of total)
-    sat_ebrw = student_data.get('satEBRW', 0)
-    sat_math = student_data.get('satMath', 0)
-    act_score = student_data.get('actScore', 0)
-    
-    if sat_ebrw and sat_math:
-        total_sat = sat_ebrw + sat_math
-        score += (total_sat / 1600) * 20
-    elif act_score:
-        score += (act_score / 36) * 20
-    
-    # AP/IB Courses (15% of total)
-    ap_courses = student_data.get('apCourses', 0)
-    ib_score = student_data.get('ibScore', 0)
-    
-    if ap_courses:
-        score += min(ap_courses / 8, 1) * 15
-    if ib_score:
-        score += (ib_score / 45) * 15
-    
-    # Non-Academic Inputs (40% weight)
-    # Extracurricular Activities (20% of total)
-    extracurriculars = student_data.get('extracurriculars', [])
-    if extracurriculars:
-        extracurricular_score = 0
-        for activity in extracurriculars:
-            activity_score = 2  # Base score
-            
-            # Recognition level bonus
-            recognition = activity.get('recognitionLevel', 'Local')
-            if recognition == 'International':
-                activity_score += 4
-            elif recognition == 'National':
-                activity_score += 3
-            elif recognition == 'Regional':
-                activity_score += 2
-            elif recognition == 'Local':
-                activity_score += 1
-            
-            # Duration bonus
-            hours_per_week = activity.get('hoursPerWeek', 0)
-            if hours_per_week >= 10:
-                activity_score += 2
-            elif hours_per_week >= 5:
-                activity_score += 1
-            
-            extracurricular_score += activity_score
-        
-        score += min(extracurricular_score / 30, 1) * 20
-    
-    # Personal Statement (10% of total)
-    personal_statement = student_data.get('personalStatement', '')
-    if len(personal_statement) > 200:
-        score += 10
-    elif len(personal_statement) > 100:
-        score += 7
-    elif personal_statement:
-        score += 5
-    
-    # Recommendation Letters (5% of total)
-    rec_letters = student_data.get('recommendationLetters', [])
-    if len(rec_letters) >= 2:
-        score += 5
-    elif len(rec_letters) >= 1:
-        score += 3
-    
-    # Legacy Status (3% of total)
-    if student_data.get('legacyStatus', False):
-        score += 3
-    
-    # TOEFL for international students (2% of total)
-    if student_data.get('citizenship') == 'international':
-        toefl_score = student_data.get('toeflScore', 0)
-        if toefl_score:
-            score += (toefl_score / 120) * 2
-    
-    return min(score, 100)
 
 @app.route('/api/calculate-profile-score', methods=['POST'])
 def calculate_profile_score():
-    """Calculate the student's profile rigor score"""
+    """Calculate the student's profile rigor score using prototype.py logic only"""
     try:
         student_data = request.json
         
-        # Calculate enhanced rigor score
-        rigor_score = calculate_enhanced_rigor_score(student_data)
-        
-        # Also calculate the original rigor bonus for comparison
-        original_rigor = rigor_bonus(
+        # Use only the prototype.py rigor_bonus function
+        rigor_score = rigor_bonus(
             student_data.get('gpa', 0),
             student_data.get('apCourses', 0),
             student_data.get('ibScore', 0)
         ) * 100  # Convert to 0-100 scale
         
         return jsonify({
-            'rigor_score': round(rigor_score, 1),
-            'original_rigor': round(original_rigor, 1),
-            'breakdown': {
-                'academic_score': round(rigor_score * 0.6, 1),
-                'non_academic_score': round(rigor_score * 0.4, 1)
-            }
+            'rigor_score': round(rigor_score, 1)
         })
     
     except Exception as e:
@@ -319,7 +221,11 @@ def search_schools():
                     required_score = 65
             
             # Calculate user's current score
-            user_score = calculate_enhanced_rigor_score(student_data)
+            user_score = rigor_bonus(
+                student_data.get('gpa', 0),
+                student_data.get('apCourses', 0),
+                student_data.get('ibScore', 0)
+            ) * 100  # Convert to 0-100 scale
             
             # Calculate comparison ratio
             comparison_ratio = round(user_score / required_score, 2) if required_score > 0 else 0
