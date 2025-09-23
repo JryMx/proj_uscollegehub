@@ -151,77 +151,23 @@ const StudentProfilePage: React.FC = () => {
   };
 
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   
   const handleSearchAsync = async () => {
     if (searchQuery.trim() && profile) {
+      setIsSearching(true);
+      try {
       const results = await searchSchools(searchQuery);
       setSearchResults(results);
       setShowResults(true);
+      } catch (error) {
+        console.error('Error searching schools:', error);
+      } finally {
+        setIsSearching(false);
+      }
     }
   };
-
-  // Calculate current score whenever form data changes
-  React.useEffect(() => {
-    // Helper function to check if there are meaningful inputs
-    const hasMeaningfulInputs = () => {
-      // Check academic data (excluding empty strings and zeros)
-      const hasAcademicData = Object.entries(academicData).some(([key, value]) => {
-        if (key === 'intendedMajor') return value && value.trim() !== '';
-        return value && value !== '' && parseFloat(value) > 0;
-      });
-
-      // Check non-academic data (excluding empty strings and default values)
-      const hasNonAcademicData = 
-        (nonAcademicData.personalStatement && nonAcademicData.personalStatement.trim() !== '') ||
-        nonAcademicData.legacyStatus === true ||
-        nonAcademicData.citizenship !== 'domestic';
-
-      // Check if there are extracurriculars with actual content
-      const hasExtracurriculars = extracurriculars.length > 0 && 
-        extracurriculars.some(activity => 
-          activity.name && activity.name.trim() !== '' ||
-          activity.description && activity.description.trim() !== ''
-        );
-
-      // Check if there are recommendation letters with actual content
-      const hasRecommendations = recommendationLetters.length > 0 &&
-        recommendationLetters.some(letter =>
-          letter.relationship && letter.relationship.trim() !== '' ||
-          letter.subject && letter.subject.trim() !== ''
-        );
-
-      return hasAcademicData || hasNonAcademicData || hasExtracurriculars || hasRecommendations;
-    };
-
-    const calculateCurrentScore = async () => {
-      try {
-        const score = await calculateProfileScore({
-          ...academicData,
-          ...nonAcademicData,
-          extracurriculars,
-          recommendationLetters,
-          gpa: parseFloat(academicData.gpa) || 0,
-          satEBRW: parseInt(academicData.satEBRW) || 0,
-          satMath: parseInt(academicData.satMath) || 0,
-          actScore: parseInt(academicData.actScore) || 0,
-          apCourses: parseInt(academicData.apCourses) || 0,
-          ibScore: parseInt(academicData.ibScore) || 0,
-          toeflScore: parseInt(academicData.toeflScore) || 0,
-        });
-        setCurrentCalculatedScore(score);
-      } catch (error) {
-        console.error('Error calculating current score:', error);
-        setCurrentCalculatedScore(0);
-      }
-    };
-
-    // Only calculate if we have meaningful inputs
-    if (hasMeaningfulInputs()) {
-      calculateCurrentScore();
-    } else {
-      setCurrentCalculatedScore(0);
-    }
-  }, [academicData, nonAcademicData, extracurriculars, recommendationLetters, calculateProfileScore]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -243,15 +189,15 @@ const StudentProfilePage: React.FC = () => {
         </div>
 
         {/* Profile Rigor Score Display */}
-        {(currentCalculatedScore > 0 || (profile && profile.gpa > 0)) && (
+        {(currentCalculatedScore > 0 || (profile && profile.profileRigorScore > 0)) && (
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-lg mb-8 text-center">
             <h2 className="text-2xl font-bold mb-2">Profile Rigor Score</h2>
-            <div className="text-5xl font-bold mb-2">{currentCalculatedScore}/100</div>
+            <div className="text-5xl font-bold mb-2">{currentCalculatedScore || profile?.profileRigorScore || 0}/100</div>
             <p className="text-blue-100">
-              {currentCalculatedScore >= 90 ? 'Excellent' : 
-               currentCalculatedScore >= 80 ? 'Very Good' : 
-               currentCalculatedScore >= 70 ? 'Good' : 
-               currentCalculatedScore >= 60 ? 'Fair' : 'Needs Improvement'}
+              {(currentCalculatedScore || profile?.profileRigorScore || 0) >= 90 ? 'Excellent' : 
+               (currentCalculatedScore || profile?.profileRigorScore || 0) >= 80 ? 'Very Good' : 
+               (currentCalculatedScore || profile?.profileRigorScore || 0) >= 70 ? 'Good' : 
+               (currentCalculatedScore || profile?.profileRigorScore || 0) >= 60 ? 'Fair' : 'Needs Improvement'}
             </p>
           </div>
         )}
@@ -838,10 +784,20 @@ const StudentProfilePage: React.FC = () => {
           <div className="px-6 pb-6">
             <button
               onClick={handleSaveProfile}
+              disabled={isLoading}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center"
             >
-              <Calculator className="h-4 w-4 mr-2" />
-              Calculate Profile Score
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Calculating...
+                </>
+              ) : (
+                <>
+                  <Calculator className="h-4 w-4 mr-2" />
+                  Calculate Profile Score
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -863,9 +819,17 @@ const StudentProfilePage: React.FC = () => {
             </div>
             <button
               onClick={handleSearchAsync}
+              disabled={isSearching || !profile}
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
             >
-              Search
+              {isSearching ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Searching...
+                </>
+              ) : (
+                'Search'
+              )}
             </button>
           </div>
 

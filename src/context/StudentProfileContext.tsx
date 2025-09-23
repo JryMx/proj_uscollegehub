@@ -173,6 +173,7 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
 
   const updateProfile = async (newProfileData: Partial<StudentProfile>) => {
     const updatedProfile = profile ? { ...profile, ...newProfileData } : {
+    const updatedProfile = profile ? { ...profile, ...newProfileData } : {
       gpa: 0,
       satEBRW: 0,
       satMath: 0,
@@ -229,11 +230,13 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
       
       // Update profile with calculated score and recommendations
       setProfile(updatedProfile);
+      return updatedProfile;
     } catch (error) {
       console.error('Error updating profile:', error);
       // Still update profile even if score calculation fails
       updatedProfile.recommendations = generateRecommendations(updatedProfile);
       setProfile(updatedProfile);
+      return updatedProfile;
     }
   };
 
