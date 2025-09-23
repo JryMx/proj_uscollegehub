@@ -1,478 +1,749 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, BookOpen, Award, Target, ArrowRight } from 'lucide-react';
-import { useStudentProfile } from '../context/StudentProfileContext';
+import { User, BookOpen, Award, Target, ArrowRight, Plus, X, Search, Calculator } from 'lucide-react';
+import { useStudentProfile, ExtracurricularActivity, RecommendationLetter } from '../context/StudentProfileContext';
 
 const StudentProfilePage: React.FC = () => {
   const navigate = useNavigate();
-  const { updateProfile } = useStudentProfile();
+  const { profile, updateProfile, calculateProfileScore, searchSchools } = useStudentProfile();
 
-  const [formData, setFormData] = useState({
-    gpa: '',
-    satScore: '',
-    actScore: '',
-    toeflScore: '',
-    apCourses: '',
-    ibScore: '',
-    extracurriculars: [''],
-    leadership: [''],
-    volunteering: [''],
-    awards: [''],
-    intendedMajor: '',
+  const [activeTab, setActiveTab] = useState<'academic' | 'non-academic'>('academic');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showResults, setShowResults] = useState(false);
+
+  // Academic form data
+  const [academicData, setAcademicData] = useState({
+    gpa: profile?.gpa?.toString() || '',
+    satEBRW: profile?.satEBRW?.toString() || '',
+    satMath: profile?.satMath?.toString() || '',
+    actScore: profile?.actScore?.toString() || '',
+    apCourses: profile?.apCourses?.toString() || '',
+    ibScore: profile?.ibScore?.toString() || '',
+    toeflScore: profile?.toeflScore?.toString() || '',
+    intendedMajor: profile?.intendedMajor || '',
   });
 
-  const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
+  // Non-academic form data
+  const [nonAcademicData, setNonAcademicData] = useState({
+    personalStatement: profile?.personalStatement || '',
+    legacyStatus: profile?.legacyStatus || false,
+    citizenship: profile?.citizenship || 'domestic',
+  });
 
-  const handleInputChange = (field: string, value: string | number) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
+  const [extracurriculars, setExtracurriculars] = useState<ExtracurricularActivity[]>(
+    profile?.extracurriculars || []
+  );
+
+  const [recommendationLetters, setRecommendationLetters] = useState<RecommendationLetter[]>(
+    profile?.recommendationLetters || []
+  );
+
+  const handleAcademicChange = (field: string, value: string) => {
+    setAcademicData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleArrayInputChange = (field: string, index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: prev[field as keyof typeof prev].map((item: string, i: number) =>
-        i === index ? value : item
-      ),
-    }));
+  const handleNonAcademicChange = (field: string, value: string | boolean) => {
+    setNonAcademicData(prev => ({ ...prev, [field]: value }));
   };
 
-  const addArrayItem = (field: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: [...prev[field as keyof typeof prev], ''],
-    }));
+  const addExtracurricular = () => {
+    const newActivity: ExtracurricularActivity = {
+      id: Date.now().toString(),
+      type: 'Other',
+      name: '',
+      description: '',
+      startDate: '',
+      endDate: '',
+      recognitionLevel: 'Local',
+      hoursPerWeek: 0,
+    };
+    setExtracurriculars(prev => [...prev, newActivity]);
   };
 
-  const removeArrayItem = (field: string, index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: prev[field as keyof typeof prev].filter((_: any, i: number) => i !== index),
-    }));
+  const updateExtracurricular = (id: string, field: keyof ExtracurricularActivity, value: any) => {
+    setExtracurriculars(prev =>
+      prev.map(activity =>
+        activity.id === id ? { ...activity, [field]: value } : activity
+      )
+    );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const profile = {
-      gpa: parseFloat(formData.gpa) || 0,
-      satScore: parseInt(formData.satScore) || 0,
-      actScore: parseInt(formData.actScore) || 0,
-      toeflScore: parseInt(formData.toeflScore) || 0,
-      apCourses: parseInt(formData.apCourses) || 0,
-      ibScore: parseInt(formData.ibScore) || 0,
-      extracurriculars: formData.extracurriculars.filter(item => item.trim() !== ''),
-      leadership: formData.leadership.filter(item => item.trim() !== ''),
-      volunteering: formData.volunteering.filter(item => item.trim() !== ''),
-      awards: formData.awards.filter(item => item.trim() !== ''),
-      intendedMajor: formData.intendedMajor,
-      recommendations: [],
+  const removeExtracurricular = (id: string) => {
+    setExtracurriculars(prev => prev.filter(activity => activity.id !== id));
+  };
+
+  const addRecommendationLetter = () => {
+    const newLetter: RecommendationLetter = {
+      id: Date.now().toString(),
+      source: 'Teacher',
+      subject: '',
+      relationship: '',
+    };
+    setRecommendationLetters(prev => [...prev, newLetter]);
+  };
+
+  const updateRecommendationLetter = (id: string, field: keyof RecommendationLetter, value: string) => {
+    setRecommendationLetters(prev =>
+      prev.map(letter =>
+        letter.id === id ? { ...letter, [field]: value } : letter
+      )
+    );
+  };
+
+  const removeRecommendationLetter = (id: string) => {
+    setRecommendationLetters(prev => prev.filter(letter => letter.id !== id));
+  };
+
+  const handleSaveProfile = () => {
+    const profileData = {
+      gpa: parseFloat(academicData.gpa) || 0,
+      satEBRW: parseInt(academicData.satEBRW) || 0,
+      satMath: parseInt(academicData.satMath) || 0,
+      actScore: parseInt(academicData.actScore) || 0,
+      apCourses: parseInt(academicData.apCourses) || 0,
+      ibScore: parseInt(academicData.ibScore) || 0,
+      toeflScore: parseInt(academicData.toeflScore) || 0,
+      intendedMajor: academicData.intendedMajor,
+      personalStatement: nonAcademicData.personalStatement,
+      legacyStatus: nonAcademicData.legacyStatus,
+      citizenship: nonAcademicData.citizenship as 'domestic' | 'international',
+      extracurriculars,
+      recommendationLetters,
+      // Legacy fields for compatibility
+      leadership: [],
+      volunteering: [],
+      awards: [],
     };
 
-    updateProfile(profile);
-    navigate('/dashboard');
+    updateProfile(profileData);
+    setShowResults(true);
   };
 
-  const nextStep = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
+  const handleSearch = () => {
+    if (searchQuery.trim() && profile) {
+      setShowResults(true);
     }
   };
 
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Academic Information</h2>
-              <p className="text-gray-600 mb-6">
-                Tell us about your academic achievements and test scores.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  GPA (4.0 scale)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="4.0"
-                  value={formData.gpa}
-                  onChange={(e) => handleInputChange('gpa', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="3.8"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Intended Major
-                </label>
-                <select
-                  value={formData.intendedMajor}
-                  onChange={(e) => handleInputChange('intendedMajor', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select a major</option>
-                  <option value="Computer Science">Computer Science</option>
-                  <option value="Engineering">Engineering</option>
-                  <option value="Business">Business</option>
-                  <option value="Medicine">Medicine</option>
-                  <option value="Liberal Arts">Liberal Arts</option>
-                  <option value="Sciences">Sciences</option>
-                  <option value="Mathematics">Mathematics</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  SAT Score
-                </label>
-                <input
-                  type="number"
-                  min="400"
-                  max="1600"
-                  value={formData.satScore}
-                  onChange={(e) => handleInputChange('satScore', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="1450"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ACT Score
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="36"
-                  value={formData.actScore}
-                  onChange={(e) => handleInputChange('actScore', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="32"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  TOEFL Score (International Students)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="120"
-                  value={formData.toeflScore}
-                  onChange={(e) => handleInputChange('toeflScore', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="105"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Number of AP Courses
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="20"
-                  value={formData.apCourses}
-                  onChange={(e) => handleInputChange('apCourses', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="5"
-                />
-              </div>
-            </div>
-          </div>
-        );
-
-      case 2:
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Extracurricular Activities</h2>
-              <p className="text-gray-600 mb-6">
-                List your extracurricular activities, clubs, sports, and other interests.
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Extracurricular Activities
-              </label>
-              {formData.extracurriculars.map((activity, index) => (
-                <div key={index} className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={activity}
-                    onChange={(e) => handleArrayInputChange('extracurriculars', index, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., Debate Club, Soccer Team, Math Olympiad"
-                  />
-                  {formData.extracurriculars.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeArrayItem('extracurriculars', index)}
-                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-md"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => addArrayItem('extracurriculars')}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-              >
-                + Add Another Activity
-              </button>
-            </div>
-          </div>
-        );
-
-      case 3:
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Leadership & Service</h2>
-              <p className="text-gray-600 mb-6">
-                Tell us about your leadership roles and volunteer work.
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Leadership Positions
-              </label>
-              {formData.leadership.map((role, index) => (
-                <div key={index} className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={role}
-                    onChange={(e) => handleArrayInputChange('leadership', index, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., Student Council President, Club Captain"
-                  />
-                  {formData.leadership.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeArrayItem('leadership', index)}
-                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-md"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => addArrayItem('leadership')}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-4"
-              >
-                + Add Leadership Role
-              </button>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Volunteer Work
-              </label>
-              {formData.volunteering.map((work, index) => (
-                <div key={index} className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={work}
-                    onChange={(e) => handleArrayInputChange('volunteering', index, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., Local Food Bank, Environmental Cleanup"
-                  />
-                  {formData.volunteering.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeArrayItem('volunteering', index)}
-                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-md"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => addArrayItem('volunteering')}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-              >
-                + Add Volunteer Work
-              </button>
-            </div>
-          </div>
-        );
-
-      case 4:
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Awards & Achievements</h2>
-              <p className="text-gray-600 mb-6">
-                List any awards, honors, or special achievements you've received.
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Awards & Honors
-              </label>
-              {formData.awards.map((award, index) => (
-                <div key={index} className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={award}
-                    onChange={(e) => handleArrayInputChange('awards', index, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., National Merit Scholar, Science Fair Winner"
-                  />
-                  {formData.awards.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeArrayItem('awards', index)}
-                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-md"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => addArrayItem('awards')}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-              >
-                + Add Award
-              </button>
-            </div>
-
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-blue-900 mb-2">Ready to analyze your profile?</h3>
-              <p className="text-blue-700 text-sm">
-                Once you submit this information, we'll analyze your academic profile and provide 
-                personalized university recommendations categorized as Safety, Target, and Reach schools.
-              </p>
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
+  const searchResults = searchQuery.trim() ? searchSchools(searchQuery) : [];
+  const currentScore = calculateProfileScore({
+    ...academicData,
+    ...nonAcademicData,
+    extracurriculars,
+    recommendationLetters,
+    gpa: parseFloat(academicData.gpa) || 0,
+    satEBRW: parseInt(academicData.satEBRW) || 0,
+    satMath: parseInt(academicData.satMath) || 0,
+    actScore: parseInt(academicData.actScore) || 0,
+    apCourses: parseInt(academicData.apCourses) || 0,
+    ibScore: parseInt(academicData.ibScore) || 0,
+    toeflScore: parseInt(academicData.toeflScore) || 0,
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <div className="bg-blue-100 p-3 rounded-full">
-              <User className="h-8 w-8 text-blue-600" />
+              <Calculator className="h-8 w-8 text-blue-600" />
             </div>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Student Profile Analysis
+            Profile Analysis
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Help us understand your academic background to provide personalized university recommendations.
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            Complete your academic and non-academic profile to get a comprehensive rigor score 
+            and personalized university recommendations.
           </p>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-600">Step {currentStep} of {totalSteps}</span>
-            <span className="text-sm font-medium text-gray-600">{Math.round((currentStep / totalSteps) * 100)}%</span>
+        {/* Profile Rigor Score Display */}
+        {(profile || Object.values(academicData).some(v => v) || Object.values(nonAcademicData).some(v => v)) && (
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-lg mb-8 text-center">
+            <h2 className="text-2xl font-bold mb-2">Profile Rigor Score</h2>
+            <div className="text-5xl font-bold mb-2">{currentScore}/100</div>
+            <p className="text-blue-100">
+              {currentScore >= 90 ? 'Excellent' : 
+               currentScore >= 80 ? 'Very Good' : 
+               currentScore >= 70 ? 'Good' : 
+               currentScore >= 60 ? 'Fair' : 'Needs Improvement'}
+            </p>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-            ></div>
+        )}
+
+        {/* Tab Navigation */}
+        <div className="bg-white rounded-lg shadow-sm mb-8">
+          <div className="border-b border-gray-200">
+            <nav className="flex">
+              <button
+                onClick={() => setActiveTab('academic')}
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'academic'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <BookOpen className="h-4 w-4 inline mr-2" />
+                Academic Inputs
+              </button>
+              <button
+                onClick={() => setActiveTab('non-academic')}
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'non-academic'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <Award className="h-4 w-4 inline mr-2" />
+                Non-Academic Inputs
+              </button>
+            </nav>
+          </div>
+
+          <div className="p-6">
+            {activeTab === 'academic' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Academic Information</h2>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      GPA (4.0 scale) *
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="4.0"
+                      value={academicData.gpa}
+                      onChange={(e) => handleAcademicChange('gpa', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="3.8"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Intended Major
+                    </label>
+                    <select
+                      value={academicData.intendedMajor}
+                      onChange={(e) => handleAcademicChange('intendedMajor', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select a major</option>
+                      <option value="Computer Science">Computer Science</option>
+                      <option value="Engineering">Engineering</option>
+                      <option value="Business">Business</option>
+                      <option value="Medicine">Medicine</option>
+                      <option value="Liberal Arts">Liberal Arts</option>
+                      <option value="Sciences">Sciences</option>
+                      <option value="Mathematics">Mathematics</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      SAT - EBRW (out of 800)
+                    </label>
+                    <input
+                      type="number"
+                      min="200"
+                      max="800"
+                      value={academicData.satEBRW}
+                      onChange={(e) => handleAcademicChange('satEBRW', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="720"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      SAT - Math (out of 800)
+                    </label>
+                    <input
+                      type="number"
+                      min="200"
+                      max="800"
+                      value={academicData.satMath}
+                      onChange={(e) => handleAcademicChange('satMath', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="730"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      ACT Score (out of 36)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="36"
+                      value={academicData.actScore}
+                      onChange={(e) => handleAcademicChange('actScore', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="32"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Optional if SAT scores provided</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      TOEFL Score (International Students)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="120"
+                      value={academicData.toeflScore}
+                      onChange={(e) => handleAcademicChange('toeflScore', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="105"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Number of AP Courses
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="20"
+                      value={academicData.apCourses}
+                      onChange={(e) => handleAcademicChange('apCourses', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="5"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      IB Score (out of 45)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="45"
+                      value={academicData.ibScore}
+                      onChange={(e) => handleAcademicChange('ibScore', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="38"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'non-academic' && (
+              <div className="space-y-8">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Non-Academic Information</h2>
+
+                {/* Personal Statement */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Personal Statement (Common App Essay)
+                  </label>
+                  <textarea
+                    value={nonAcademicData.personalStatement}
+                    onChange={(e) => handleNonAcademicChange('personalStatement', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows={8}
+                    placeholder="Write your personal statement here..."
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {nonAcademicData.personalStatement.length} characters
+                  </p>
+                </div>
+
+                {/* Legacy Status and Citizenship */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Legacy Status
+                    </label>
+                    <div className="flex items-center space-x-4">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="legacyStatus"
+                          checked={nonAcademicData.legacyStatus === true}
+                          onChange={() => handleNonAcademicChange('legacyStatus', true)}
+                          className="mr-2"
+                        />
+                        Yes
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="legacyStatus"
+                          checked={nonAcademicData.legacyStatus === false}
+                          onChange={() => handleNonAcademicChange('legacyStatus', false)}
+                          className="mr-2"
+                        />
+                        No
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Citizenship
+                    </label>
+                    <div className="flex items-center space-x-4">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="citizenship"
+                          checked={nonAcademicData.citizenship === 'domestic'}
+                          onChange={() => handleNonAcademicChange('citizenship', 'domestic')}
+                          className="mr-2"
+                        />
+                        Domestic
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="citizenship"
+                          checked={nonAcademicData.citizenship === 'international'}
+                          onChange={() => handleNonAcademicChange('citizenship', 'international')}
+                          className="mr-2"
+                        />
+                        International
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Extracurricular Activities */}
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Extracurricular Activities</h3>
+                    <button
+                      onClick={addExtracurricular}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Activity
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {extracurriculars.map((activity, index) => (
+                      <div key={activity.id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-4">
+                          <h4 className="font-medium text-gray-900">Activity {index + 1}</h4>
+                          <button
+                            onClick={() => removeExtracurricular(activity.id)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Activity Type
+                            </label>
+                            <select
+                              value={activity.type}
+                              onChange={(e) => updateExtracurricular(activity.id, 'type', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="Sports">Sports</option>
+                              <option value="Arts">Arts</option>
+                              <option value="Community Service">Community Service</option>
+                              <option value="Research">Research</option>
+                              <option value="Academic Clubs">Academic Clubs</option>
+                              <option value="Leadership">Leadership</option>
+                              <option value="Work Experience">Work Experience</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Activity Name
+                            </label>
+                            <input
+                              type="text"
+                              value={activity.name}
+                              onChange={(e) => updateExtracurricular(activity.id, 'name', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="e.g., Varsity Soccer"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Start Date
+                            </label>
+                            <input
+                              type="date"
+                              value={activity.startDate}
+                              onChange={(e) => updateExtracurricular(activity.id, 'startDate', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              End Date
+                            </label>
+                            <input
+                              type="date"
+                              value={activity.endDate}
+                              onChange={(e) => updateExtracurricular(activity.id, 'endDate', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Recognition Level
+                            </label>
+                            <select
+                              value={activity.recognitionLevel}
+                              onChange={(e) => updateExtracurricular(activity.id, 'recognitionLevel', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="Local">Local</option>
+                              <option value="Regional">Regional</option>
+                              <option value="National">National</option>
+                              <option value="International">International</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Hours per Week
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              max="40"
+                              value={activity.hoursPerWeek}
+                              onChange={(e) => updateExtracurricular(activity.id, 'hoursPerWeek', parseInt(e.target.value) || 0)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="10"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="mt-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Description
+                          </label>
+                          <textarea
+                            value={activity.description}
+                            onChange={(e) => updateExtracurricular(activity.id, 'description', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            rows={2}
+                            placeholder="Describe your role and achievements..."
+                          />
+                        </div>
+                      </div>
+                    ))}
+
+                    {extracurriculars.length === 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        <Award className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                        <p>No extracurricular activities added yet.</p>
+                        <p className="text-sm">Click "Add Activity" to get started.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Recommendation Letters */}
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Recommendation Letters</h3>
+                    <button
+                      onClick={addRecommendationLetter}
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Letter
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {recommendationLetters.map((letter, index) => (
+                      <div key={letter.id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-4">
+                          <h4 className="font-medium text-gray-900">Recommendation {index + 1}</h4>
+                          <button
+                            onClick={() => removeRecommendationLetter(letter.id)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+
+                        <div className="grid md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Source
+                            </label>
+                            <select
+                              value={letter.source}
+                              onChange={(e) => updateRecommendationLetter(letter.id, 'source', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="Teacher">Teacher</option>
+                              <option value="Counselor">Counselor</option>
+                              <option value="Principal">Principal</option>
+                              <option value="Coach">Coach</option>
+                              <option value="Employer">Employer</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Subject (if Teacher)
+                            </label>
+                            <input
+                              type="text"
+                              value={letter.subject || ''}
+                              onChange={(e) => updateRecommendationLetter(letter.id, 'subject', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="e.g., Mathematics"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Relationship
+                            </label>
+                            <input
+                              type="text"
+                              value={letter.relationship}
+                              onChange={(e) => updateRecommendationLetter(letter.id, 'relationship', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="e.g., AP Calculus teacher for 2 years"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {recommendationLetters.length === 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        <User className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                        <p>No recommendation letters added yet.</p>
+                        <p className="text-sm">Click "Add Letter" to get started.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Save Button */}
+          <div className="px-6 pb-6">
+            <button
+              onClick={handleSaveProfile}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center"
+            >
+              <Calculator className="h-4 w-4 mr-2" />
+              Calculate Profile Score
+            </button>
           </div>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit}>
-          <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-            {renderStepContent()}
-          </div>
-
-          {/* Navigation */}
-          <div className="flex justify-between">
-            <button
-              type="button"
-              onClick={prevStep}
-              disabled={currentStep === 1}
-              className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                currentStep === 1
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              Previous
-            </button>
-
-            {currentStep < totalSteps ? (
-              <button
-                type="button"
-                onClick={nextStep}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center"
-              >
-                Next
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </button>
-            ) : (
-              <button
-                type="submit"
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center"
-              >
-                <Target className="mr-2 h-4 w-4" />
-                Analyze Profile
-              </button>
-            )}
-          </div>
-        </form>
-
-        {/* Step Indicators */}
-        <div className="flex justify-center mt-8 space-x-4">
-          {[1, 2, 3, 4].map((step) => (
-            <div
-              key={step}
-              className={`flex items-center justify-center w-10 h-10 rounded-full font-medium text-sm ${
-                step <= currentStep
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-600'
-              }`}
-            >
-              {step === 1 && <BookOpen className="h-4 w-4" />}
-              {step === 2 && <Users className="h-4 w-4" />}
-              {step === 3 && <Target className="h-4 w-4" />}
-              {step === 4 && <Award className="h-4 w-4" />}
+        {/* School Comparison Section */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">School Comparison</h2>
+          
+          <div className="flex gap-4 mb-6">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                type="text"
+                placeholder="Search schools by name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
-          ))}
+            <button
+              onClick={handleSearch}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              Search
+            </button>
+          </div>
+
+          {showResults && searchResults.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900">Search Results</h3>
+              {searchResults.map(school => (
+                <div
+                  key={school.id}
+                  className={`border rounded-lg p-4 ${
+                    school.category === 'safety' ? 'border-green-200 bg-green-50' :
+                    school.category === 'target' ? 'border-orange-200 bg-orange-50' :
+                    'border-red-200 bg-red-50'
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-semibold text-gray-900">{school.name}</h4>
+                      <p className="text-sm text-gray-600">#{school.ranking} • {school.acceptanceRate}% acceptance rate</p>
+                    </div>
+                    <div className="text-right">
+                      <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                        school.category === 'safety' ? 'bg-green-100 text-green-800' :
+                        school.category === 'target' ? 'bg-orange-100 text-orange-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {school.category.charAt(0).toUpperCase() + school.category.slice(1)}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid md:grid-cols-3 gap-4 mt-4 text-sm">
+                    <div>
+                      <span className="font-medium text-gray-600">Required Score:</span>
+                      <span className="ml-2 font-bold">{school.requiredScore}/100</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-600">Your Score:</span>
+                      <span className="ml-2 font-bold">{currentScore}/100</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-600">Ratio:</span>
+                      <span className="ml-2 font-bold">{school.comparisonRatio}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {showResults && searchResults.length === 0 && searchQuery.trim() && (
+            <div className="text-center py-8 text-gray-500">
+              <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p>No schools found matching "{searchQuery}"</p>
+              <p className="text-sm">Try searching for a different school name.</p>
+            </div>
+          )}
+
+          {!showResults && (
+            <div className="text-center py-8 text-gray-500">
+              <Target className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p>Complete your profile and search for schools to see comparisons.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
