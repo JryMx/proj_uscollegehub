@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 // API base URL - adjust for your backend deployment
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
   ? 'https://your-backend-url.com/api' 
-  : `${window.location.protocol}//${window.location.hostname}:5000/api`;
+  : 'http://localhost:5000/api';
 
 export interface StudentProfile {
   // Academic Inputs
