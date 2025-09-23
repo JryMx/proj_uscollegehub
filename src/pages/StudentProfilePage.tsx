@@ -162,6 +162,37 @@ const StudentProfilePage: React.FC = () => {
 
   // Calculate current score whenever form data changes
   React.useEffect(() => {
+    // Helper function to check if there are meaningful inputs
+    const hasMeaningfulInputs = () => {
+      // Check academic data (excluding empty strings and zeros)
+      const hasAcademicData = Object.entries(academicData).some(([key, value]) => {
+        if (key === 'intendedMajor') return value && value.trim() !== '';
+        return value && value !== '' && parseFloat(value) > 0;
+      });
+
+      // Check non-academic data (excluding empty strings and default values)
+      const hasNonAcademicData = 
+        (nonAcademicData.personalStatement && nonAcademicData.personalStatement.trim() !== '') ||
+        nonAcademicData.legacyStatus === true ||
+        nonAcademicData.citizenship !== 'domestic';
+
+      // Check if there are extracurriculars with actual content
+      const hasExtracurriculars = extracurriculars.length > 0 && 
+        extracurriculars.some(activity => 
+          activity.name && activity.name.trim() !== '' ||
+          activity.description && activity.description.trim() !== ''
+        );
+
+      // Check if there are recommendation letters with actual content
+      const hasRecommendations = recommendationLetters.length > 0 &&
+        recommendationLetters.some(letter =>
+          letter.relationship && letter.relationship.trim() !== '' ||
+          letter.subject && letter.subject.trim() !== ''
+        );
+
+      return hasAcademicData || hasNonAcademicData || hasExtracurriculars || hasRecommendations;
+    };
+
     const calculateCurrentScore = async () => {
       try {
         const score = await calculateProfileScore({
@@ -184,8 +215,8 @@ const StudentProfilePage: React.FC = () => {
       }
     };
 
-    // Only calculate if we have some data
-    if (Object.values(academicData).some(v => v) || Object.values(nonAcademicData).some(v => v)) {
+    // Only calculate if we have meaningful inputs
+    if (hasMeaningfulInputs()) {
       calculateCurrentScore();
     } else {
       setCurrentCalculatedScore(0);
@@ -212,7 +243,7 @@ const StudentProfilePage: React.FC = () => {
         </div>
 
         {/* Profile Rigor Score Display */}
-        {(profile || Object.values(academicData).some(v => v) || Object.values(nonAcademicData).some(v => v)) && (
+        {(currentCalculatedScore > 0 || (profile && profile.gpa > 0)) && (
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-lg mb-8 text-center">
             <h2 className="text-2xl font-bold mb-2">Profile Rigor Score</h2>
             <div className="text-5xl font-bold mb-2">{currentCalculatedScore}/100</div>
