@@ -156,7 +156,7 @@ def compute_fit(student: Dict[str, Any], row: pd.Series) -> Optional[float]:
     sc_sat_m = row.get("latest.admissions.sat_scores.midpoint.math")
     sc_sat_r = row.get("latest.admissions.sat_scores.midpoint.critical_reading")
     if pd.notna(sc_sat_m) and pd.notna(sc_sat_r) and sat_total is not None and sat_total > 0:
-        mid_total = (sc_sat_m + sc_sat_r) * 10  # convert to total
+        mid_total = sc_sat_m + sc_sat_r  # already total scores, don't multiply by 10
         lo = mid_total - 100
         hi = mid_total + 100
         return pct_position(sat_total, lo, hi)

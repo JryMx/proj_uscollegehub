@@ -241,7 +241,7 @@ const StudentProfilePage: React.FC = () => {
                         <h4 className="font-bold text-gray-900 mb-2">{recommendation.universityId}</h4>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Admission Chance:</span>
+                            <span className="text-gray-600">Match Score:</span>
                             <span className={`font-medium text-${categoryColor}-600`}>
                               {Math.round(recommendation.admissionChance * 100)}%
                             </span>

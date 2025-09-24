@@ -74,7 +74,7 @@ const HomePage: React.FC = () => {
               <h3 className="text-xl font-semibold mb-4">Profile Analysis</h3>
               <p className="text-gray-600 mb-6">
                 AI-powered analysis of your academic profile to categorize schools into 
-                safety, target, and reach categories with admission chances.
+                safety, target, and reach categories with match scores.
               </p>
               <Link
                 to="/student-profile"
