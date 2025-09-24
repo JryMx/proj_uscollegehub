@@ -62,7 +62,7 @@ const StudentProfilePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 transition-colors">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -71,10 +71,10 @@ const StudentProfilePage: React.FC = () => {
               <Calculator className="h-8 w-8 text-blue-600" />
             </div>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Profile Analysis
           </h1>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             Complete your academic and non-academic profile to get a comprehensive rigor score 
             and personalized university recommendations.
           </p>
@@ -98,8 +98,8 @@ const StudentProfilePage: React.FC = () => {
         {(currentRecommendations.length > 0 || (profile && profile.recommendations && profile.recommendations.length > 0)) && (
           <div className="mb-8">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">University Recommendations</h2>
-              <p className="text-gray-600">Based on your academic profile and competitiveness analysis</p>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">University Recommendations</h2>
+              <p className="text-gray-600 dark:text-gray-300">Based on your academic profile and competitiveness analysis</p>
             </div>
             
             {['reach', 'target', 'safety'].map((category) => {
@@ -122,27 +122,27 @@ const StudentProfilePage: React.FC = () => {
                     {categoryRecommendations.map((recommendation: SchoolRecommendation, index: number) => (
                       <div 
                         key={`${recommendation.universityId}-${index}`}
-                        className={`bg-white border-l-4 border-${categoryColor}-500 rounded-lg shadow-sm p-4`}
+                        className={`bg-white dark:bg-gray-800 border-l-4 border-${categoryColor}-500 rounded-lg shadow-sm p-4`}
                         data-testid={`recommendation-${category}-${index}`}
                       >
-                        <h4 className="font-bold text-gray-900 mb-2">{recommendation.universityId}</h4>
+                        <h4 className="font-bold text-gray-900 dark:text-white mb-2">{recommendation.universityId}</h4>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Match Score:</span>
+                            <span className="text-gray-600 dark:text-gray-400">Match Score:</span>
                             <span className={`font-medium text-${categoryColor}-600`}>
                               {Math.round(recommendation.admissionChance * 100)}%
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Match Score:</span>
-                            <span className="font-medium">
+                            <span className="text-gray-600 dark:text-gray-400">Match Score:</span>
+                            <span className="font-medium text-gray-900 dark:text-white">
                               {Math.round(recommendation.comparisonRatio * 100)}/100
                             </span>
                           </div>
                           {recommendation.requiredScore && (
                             <div className="flex justify-between">
-                              <span className="text-gray-600">Required Score:</span>
-                              <span className="font-medium">{recommendation.requiredScore}/100</span>
+                              <span className="text-gray-600 dark:text-gray-400">Required Score:</span>
+                              <span className="font-medium text-gray-900 dark:text-white">{recommendation.requiredScore}/100</span>
                             </div>
                           )}
                         </div>
@@ -156,14 +156,14 @@ const StudentProfilePage: React.FC = () => {
         )}
 
         {/* Academic Information Form */}
-        <div className="bg-white rounded-lg shadow-sm mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-8">
           <div className="p-6">
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Academic Information</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Academic Information</h2>
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     GPA (4.0 scale) *
                   </label>
                   <input
@@ -173,14 +173,14 @@ const StudentProfilePage: React.FC = () => {
                     max="4.0"
                     value={academicData.gpa}
                     onChange={(e) => handleAcademicChange('gpa', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="3.8"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     SAT - EBRW (out of 800)
                   </label>
                   <input
@@ -189,13 +189,13 @@ const StudentProfilePage: React.FC = () => {
                     max="800"
                     value={academicData.satEBRW}
                     onChange={(e) => handleAcademicChange('satEBRW', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="720"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     SAT - Math (out of 800)
                   </label>
                   <input
@@ -204,13 +204,13 @@ const StudentProfilePage: React.FC = () => {
                     max="800"
                     value={academicData.satMath}
                     onChange={(e) => handleAcademicChange('satMath', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="730"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     ACT Score (out of 36)
                   </label>
                   <input
@@ -219,14 +219,14 @@ const StudentProfilePage: React.FC = () => {
                     max="36"
                     value={academicData.actScore}
                     onChange={(e) => handleAcademicChange('actScore', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="32"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Optional if SAT scores provided</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Optional if SAT scores provided</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     TOEFL Score (International Students)
                   </label>
                   <input
@@ -235,13 +235,13 @@ const StudentProfilePage: React.FC = () => {
                     max="120"
                     value={academicData.toeflScore}
                     onChange={(e) => handleAcademicChange('toeflScore', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="105"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Number of AP Courses
                   </label>
                   <input
@@ -250,13 +250,13 @@ const StudentProfilePage: React.FC = () => {
                     max="20"
                     value={academicData.apCourses}
                     onChange={(e) => handleAcademicChange('apCourses', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="5"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     IB Score (out of 45)
                   </label>
                   <input
@@ -265,7 +265,7 @@ const StudentProfilePage: React.FC = () => {
                     max="45"
                     value={academicData.ibScore}
                     onChange={(e) => handleAcademicChange('ibScore', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="38"
                   />
                 </div>
