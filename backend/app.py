@@ -123,7 +123,9 @@ def calculate_profile_score():
         rigor_score = rigor_bonus(
             student_data.get('gpa', 0),
             student_data.get('apCourses', 0),
-            student_data.get('ibScore', 0)
+            student_data.get('ibScore', 0),
+            student_data.get('satEBRW', 0),
+            student_data.get('satMath', 0)
         ) * 100  # Convert to 0-100 scale
         
         return jsonify({
@@ -224,7 +226,9 @@ def search_schools():
             user_score = rigor_bonus(
                 student_data.get('gpa', 0),
                 student_data.get('apCourses', 0),
-                student_data.get('ibScore', 0)
+                student_data.get('ibScore', 0),
+                student_data.get('satEBRW', 0),
+                student_data.get('satMath', 0)
             ) * 100  # Convert to 0-100 scale
             
             # Calculate comparison ratio

@@ -110,12 +110,23 @@ def load_ipeds_admissions(csv_path: Optional[str]) -> Optional[pd.DataFrame]:
 # Scoring
 # ---------------------------
 
-def rigor_bonus(gpa: float, ap: int, ib: int) -> float:
-    # Simple, explainable rigor score (0..1)
-    score = (gpa or 0) / 4.0
-    score += min(max(ap or 0, 0) * 0.02, 0.1)  # AP bump capped at +0.1
+def rigor_bonus(gpa: float, ap: int, ib: int, sat_ebrw: Optional[int] = None, sat_math: Optional[int] = None) -> float:
+    # Comprehensive rigor score (0..1) including GPA, SAT, AP, and IB
+    # Core academic components (normalized to 0-1)
+    gpa_norm = np.clip((gpa or 0) / 4.0, 0, 1)
+    
+    # SAT component (combined EBRW + Math, normalized to 0-1)
+    sat_total = (sat_ebrw or 0) + (sat_math or 0)
+    sat_norm = np.clip(sat_total / 1600.0, 0, 1)
+    # Bonus components
+    ap_bump = min(max(ap or 0, 0) * 0.02, 0.10)  # AP bump capped at +0.10
     if ib is not None and ib >= 38:
-        score += 0.05
+        ib_bump = 0.05
+    else:
+        ib_bump = 0.0
+    
+    # Calculate the comprehensive score
+    score = (0.60 * gpa_norm) + (0.25 * sat_norm) + ap_bump + ib_bump
     return float(np.clip(score, 0, 1))
 
 def pct_position(x: float, lo: float, hi: float) -> Optional[float]:
