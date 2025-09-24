@@ -25,6 +25,12 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)  # Enable CORS for React frontend
 
+def safe_float_value(value):
+    """Convert NaN values to None for JSON serialization"""
+    if pd.isna(value) or (isinstance(value, float) and np.isnan(value)):
+        return None
+    return value
+
 # Cache for university data to avoid repeated API calls
 university_cache = None
 last_cache_update = None
@@ -191,11 +197,11 @@ def calculate_profile_score():
                     'name': rec.get('school.name', ''),
                     'city': rec.get('school.city', ''),
                     'state': rec.get('school.state', ''),
-                    'admissionRate': rec.get('latest.admissions.admission_rate.overall', 0) * 100 if rec.get('latest.admissions.admission_rate.overall') else None,
-                    'satMathMidpoint': rec.get('latest.admissions.sat_scores.midpoint.math', None),
-                    'satReadingMidpoint': rec.get('latest.admissions.sat_scores.midpoint.critical_reading', None),
-                    'actMidpoint': rec.get('latest.admissions.act_scores.midpoint.cumulative', None),
-                    'competitivenessScore': round(rec.get('score', 0) * 100, 1),
+                    'admissionRate': safe_float_value(rec.get('latest.admissions.admission_rate.overall', 0) * 100) if rec.get('latest.admissions.admission_rate.overall') else None,
+                    'satMathMidpoint': safe_float_value(rec.get('latest.admissions.sat_scores.midpoint.math', None)),
+                    'satReadingMidpoint': safe_float_value(rec.get('latest.admissions.sat_scores.midpoint.critical_reading', None)),
+                    'actMidpoint': safe_float_value(rec.get('latest.admissions.act_scores.midpoint.cumulative', None)),
+                    'competitivenessScore': safe_float_value(round((rec.get('score') or 0) * 100, 1)),
                     'bucket': bucket
                 }
                 grouped_recommendations[bucket].append(school_data)
