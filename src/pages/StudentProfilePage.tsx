@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Target, ArrowRight, Search, Calculator } from 'lucide-react';
+import { Target, ArrowRight, Calculator } from 'lucide-react';
 import { useStudentProfile, SchoolRecommendation } from '../context/StudentProfileContext';
 
 const StudentProfilePage: React.FC = () => {
   const navigate = useNavigate();
-  const { profile, updateProfile, calculateProfileScore, searchSchools } = useStudentProfile();
+  const { profile, updateProfile, calculateProfileScore } = useStudentProfile();
 
-  const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [currentCalculatedScore, setCurrentCalculatedScore] = useState<number>(0);
   const [currentRecommendations, setCurrentRecommendations] = useState<any[]>([]);
@@ -61,32 +60,7 @@ const StudentProfilePage: React.FC = () => {
     setShowResults(true);
   };
 
-  const handleSearch = () => {
-    if (searchQuery.trim() && profile) {
-      searchSchools(searchQuery).then(() => {
-        setShowResults(true);
-      });
-    }
-  };
-
-  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  
-  const handleSearchAsync = async () => {
-    if (searchQuery.trim() && profile) {
-      setIsSearching(true);
-      try {
-      const results = await searchSchools(searchQuery);
-      setSearchResults(results);
-      setShowResults(true);
-      } catch (error) {
-        console.error('Error searching schools:', error);
-      } finally {
-        setIsSearching(false);
-      }
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -341,99 +315,6 @@ const StudentProfilePage: React.FC = () => {
               )}
             </button>
           </div>
-        </div>
-        {/* School Comparison Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">School Comparison</h2>
-          
-          <div className="flex gap-4 mb-6">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input
-                type="text"
-                placeholder="Search schools by name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <button
-              onClick={handleSearchAsync}
-              disabled={isSearching || !profile}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              {isSearching ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Searching...
-                </>
-              ) : (
-                'Search'
-              )}
-            </button>
-          </div>
-
-          {showResults && searchResults.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900">Search Results</h3>
-              {searchResults.map(school => (
-                <div
-                  key={school.id}
-                  className={`border rounded-lg p-4 ${
-                    school.category === 'safety' ? 'border-green-200 bg-green-50' :
-                    school.category === 'target' ? 'border-orange-200 bg-orange-50' :
-                    'border-red-200 bg-red-50'
-                  }`}
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-semibold text-gray-900">{school.name}</h4>
-                      <p className="text-sm text-gray-600">#{school.ranking} • {school.acceptanceRate}% acceptance rate</p>
-                    </div>
-                    <div className="text-right">
-                      <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                        school.category === 'safety' ? 'bg-green-100 text-green-800' :
-                        school.category === 'target' ? 'bg-orange-100 text-orange-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {school.category.charAt(0).toUpperCase() + school.category.slice(1)}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="grid md:grid-cols-3 gap-4 mt-4 text-sm">
-                    <div>
-                      <span className="font-medium text-gray-600">Required Score:</span>
-                      <span className="ml-2 font-bold">{school.requiredScore}/100</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-600">Your Score:</span>
-                      <span className="ml-2 font-bold">{currentCalculatedScore}/100</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-600">Ratio:</span>
-                      <span className="ml-2 font-bold">{school.comparisonRatio}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {showResults && searchResults.length === 0 && searchQuery.trim() && (
-            <div className="text-center py-8 text-gray-500">
-              <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>No schools found matching "{searchQuery}"</p>
-              <p className="text-sm">Try searching for a different school name.</p>
-            </div>
-          )}
-
-          {!showResults && (
-            <div className="text-center py-8 text-gray-500">
-              <Target className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>Complete your profile and search for schools to see comparisons.</p>
-            </div>
-          )}
         </div>
       </div>
     </div>
