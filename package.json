@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "dev:backend": "cd backend && python app.py",
+    "dev:fullstack": "npm run dev:backend & npm run dev",
     "build": "vite build",
+    "start": "npm run dev:fullstack",
     "lint": "eslint .",
     "preview": "vite preview"
   },

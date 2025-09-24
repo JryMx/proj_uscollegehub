@@ -257,5 +257,5 @@ def health_check():
     return jsonify({'status': 'healthy', 'message': 'Backend API is running'})
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    port = int(os.environ.get('PORT', 5001))
+    app.run(host='localhost', port=port, debug=True)
