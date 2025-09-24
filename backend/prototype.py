@@ -132,7 +132,8 @@ def compute_fit(student: Dict[str, Any], row: pd.Series) -> Optional[float]:
     ACT25, ACT75 = row.get("ACTCM25"), row.get("ACTCM75")
 
     # Prefer IPEDS 25/75 SAT band
-    if pd.notna(SATMT25) and pd.notna(SATMT75) and pd.notna(SATVR25) and pd.notna(SATVR75) and sat_total:
+    if (pd.notna(SATMT25) and pd.notna(SATMT75) and pd.notna(SATVR25) and 
+        pd.notna(SATVR75) and sat_total is not None and sat_total > 0):
         lo = SATMT25 + SATVR25
         hi = SATMT75 + SATVR75
         return pct_position(sat_total, lo, hi)
@@ -140,19 +141,19 @@ def compute_fit(student: Dict[str, Any], row: pd.Series) -> Optional[float]:
     # Fall back to Scorecard SAT midpoints (approx band ±100)
     sc_sat_m = row.get("latest.admissions.sat_scores.midpoint.math")
     sc_sat_r = row.get("latest.admissions.sat_scores.midpoint.critical_reading")
-    if pd.notna(sc_sat_m) and pd.notna(sc_sat_r) and sat_total:
+    if pd.notna(sc_sat_m) and pd.notna(sc_sat_r) and sat_total is not None and sat_total > 0:
         mid_total = (sc_sat_m + sc_sat_r) * 10  # convert to total
         lo = mid_total - 100
         hi = mid_total + 100
         return pct_position(sat_total, lo, hi)
 
     # ACT fallback (IPEDS 25/75)
-    if pd.notna(ACT25) and pd.notna(ACT75) and act:
+    if pd.notna(ACT25) and pd.notna(ACT75) and act is not None and act > 0:
         return pct_position(act, ACT25, ACT75)
 
     # Scorecard ACT midpoint fallback (±2)
     sc_act_mid = row.get("latest.admissions.act_scores.midpoint.cumulative")
-    if pd.notna(sc_act_mid) and act:
+    if pd.notna(sc_act_mid) and act is not None and act > 0:
         lo = sc_act_mid - 2
         hi = sc_act_mid + 2
         return pct_position(act, lo, hi)
