@@ -20,7 +20,6 @@ const StudentProfilePage: React.FC = () => {
     apCourses: profile?.apCourses?.toString() || '',
     ibScore: profile?.ibScore?.toString() || '',
     toeflScore: profile?.toeflScore?.toString() || '',
-    intendedMajor: profile?.intendedMajor || '',
   });
 
   const handleAcademicChange = (field: string, value: string) => {
@@ -40,7 +39,6 @@ const StudentProfilePage: React.FC = () => {
       apCourses: parseInt(academicData.apCourses) || 0,
       ibScore: parseInt(academicData.ibScore) || 0,
       toeflScore: parseInt(academicData.toeflScore) || 0,
-      intendedMajor: academicData.intendedMajor,
       personalStatement: '',
       legacyStatus: false,
       citizenship: 'domestic' as 'domestic' | 'international',
@@ -50,6 +48,7 @@ const StudentProfilePage: React.FC = () => {
       leadership: [],
       volunteering: [],
       awards: [],
+      intendedMajor: '',
     };
 
     const updatedProfile = await updateProfile(profileData);
@@ -178,27 +177,6 @@ const StudentProfilePage: React.FC = () => {
                     placeholder="3.8"
                     required
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Intended Major
-                  </label>
-                  <select
-                    value={academicData.intendedMajor}
-                    onChange={(e) => handleAcademicChange('intendedMajor', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select a major</option>
-                    <option value="Computer Science">Computer Science</option>
-                    <option value="Engineering">Engineering</option>
-                    <option value="Business">Business</option>
-                    <option value="Medicine">Medicine</option>
-                    <option value="Liberal Arts">Liberal Arts</option>
-                    <option value="Sciences">Sciences</option>
-                    <option value="Mathematics">Mathematics</option>
-                    <option value="Other">Other</option>
-                  </select>
                 </div>
 
                 <div>
