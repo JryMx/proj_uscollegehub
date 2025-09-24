@@ -1,34 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, BookOpen, Award, Target, ArrowRight, Plus, X, Search, Calculator, CheckCircle, XCircle, ClipboardList } from 'lucide-react';
-import { useStudentProfile, ExtracurricularActivity, RecommendationLetter, ApplicationComponents, SchoolRecommendation } from '../context/StudentProfileContext';
+import { Target, ArrowRight, Search, Calculator } from 'lucide-react';
+import { useStudentProfile, SchoolRecommendation } from '../context/StudentProfileContext';
 
 const StudentProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { profile, updateProfile, calculateProfileScore, searchSchools } = useStudentProfile();
 
-  const [activeTab, setActiveTab] = useState<'academic' | 'non-academic'>('academic');
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [currentCalculatedScore, setCurrentCalculatedScore] = useState<number>(0);
   const [currentRecommendations, setCurrentRecommendations] = useState<any[]>([]);
-
-  // Application Components Checker
-  const [applicationComponents, setApplicationComponents] = useState<ApplicationComponents>(
-    profile?.applicationComponents || {
-      secondarySchoolGPA: false,
-      classRank: false,
-      academicRecord: false,
-      collegePrepProgram: false,
-      recommendationLetters: false,
-      formalDemonstrationCompetencies: false,
-      workExperience: false,
-      personalStatementEssay: false,
-      legacyStatus: false,
-      admissionTestScores: false,
-      englishProficiencyTest: false,
-    }
-  );
 
   // Academic form data
   const [academicData, setAcademicData] = useState({
@@ -42,79 +24,12 @@ const StudentProfilePage: React.FC = () => {
     intendedMajor: profile?.intendedMajor || '',
   });
 
-  // Non-academic form data
-  const [nonAcademicData, setNonAcademicData] = useState({
-    personalStatement: profile?.personalStatement || '',
-    legacyStatus: profile?.legacyStatus || false,
-    citizenship: profile?.citizenship || 'domestic',
-  });
-
-  const [extracurriculars, setExtracurriculars] = useState<ExtracurricularActivity[]>(
-    profile?.extracurriculars || []
-  );
-
-  const [recommendationLetters, setRecommendationLetters] = useState<RecommendationLetter[]>(
-    profile?.recommendationLetters || []
-  );
-
   const handleAcademicChange = (field: string, value: string) => {
     setAcademicData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleNonAcademicChange = (field: string, value: string | boolean) => {
     setNonAcademicData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleApplicationComponentChange = (component: keyof ApplicationComponents, value: boolean) => {
-    setApplicationComponents(prev => ({ ...prev, [component]: value }));
-  };
-
-  const addExtracurricular = () => {
-    const newActivity: ExtracurricularActivity = {
-      id: Date.now().toString(),
-      type: 'Other',
-      name: '',
-      description: '',
-      startDate: '',
-      endDate: '',
-      recognitionLevel: 'Local',
-      hoursPerWeek: 0,
-    };
-    setExtracurriculars(prev => [...prev, newActivity]);
-  };
-
-  const updateExtracurricular = (id: string, field: keyof ExtracurricularActivity, value: any) => {
-    setExtracurriculars(prev =>
-      prev.map(activity =>
-        activity.id === id ? { ...activity, [field]: value } : activity
-      )
-    );
-  };
-
-  const removeExtracurricular = (id: string) => {
-    setExtracurriculars(prev => prev.filter(activity => activity.id !== id));
-  };
-
-  const addRecommendationLetter = () => {
-    const newLetter: RecommendationLetter = {
-      id: Date.now().toString(),
-      source: 'Teacher',
-      subject: '',
-      relationship: '',
-    };
-    setRecommendationLetters(prev => [...prev, newLetter]);
-  };
-
-  const updateRecommendationLetter = (id: string, field: keyof RecommendationLetter, value: string) => {
-    setRecommendationLetters(prev =>
-      prev.map(letter =>
-        letter.id === id ? { ...letter, [field]: value } : letter
-      )
-    );
-  };
-
-  const removeRecommendationLetter = (id: string) => {
-    setRecommendationLetters(prev => prev.filter(letter => letter.id !== id));
   };
 
   const handleSaveProfile = async () => {
@@ -127,12 +42,11 @@ const StudentProfilePage: React.FC = () => {
       ibScore: parseInt(academicData.ibScore) || 0,
       toeflScore: parseInt(academicData.toeflScore) || 0,
       intendedMajor: academicData.intendedMajor,
-      personalStatement: nonAcademicData.personalStatement,
-      legacyStatus: nonAcademicData.legacyStatus,
-      citizenship: nonAcademicData.citizenship as 'domestic' | 'international',
-      extracurriculars,
-      recommendationLetters,
-      applicationComponents,
+      personalStatement: '',
+      legacyStatus: false,
+      citizenship: 'domestic' as 'domestic' | 'international',
+      extracurriculars: [],
+      recommendationLetters: [],
       // Legacy fields for compatibility
       leadership: [],
       volunteering: [],
@@ -268,582 +182,143 @@ const StudentProfilePage: React.FC = () => {
           </div>
         )}
 
-        {/* Application Components Checker */}
+        {/* Academic Information Form */}
         <div className="bg-white rounded-lg shadow-sm mb-8">
           <div className="p-6">
-            <div className="flex items-center mb-6">
-              <ClipboardList className="h-6 w-6 text-blue-600 mr-3" />
-              <h2 className="text-xl font-bold text-gray-900">Application Components Checklist</h2>
-            </div>
-            
-            <p className="text-gray-600 mb-6">
-              Check off the application components you have completed or possess. This helps track your application readiness.
-            </p>
+            <div className="space-y-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Academic Information</h2>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[
-                { key: 'secondarySchoolGPA', label: 'Secondary School GPA', description: 'Official high school GPA' },
-                { key: 'classRank', label: 'Class Rank', description: 'Your ranking within graduating class' },
-                { key: 'academicRecord', label: 'Academic Record', description: 'Official transcripts and grades' },
-                { key: 'collegePrepProgram', label: 'College-Prep Program', description: 'Completion of college preparatory curriculum' },
-                { key: 'recommendationLetters', label: 'Recommendation Letters', description: 'Letters from teachers, counselors, etc.' },
-                { key: 'formalDemonstrationCompetencies', label: 'Demonstration of Competencies', description: 'Portfolio, auditions, or skill demonstrations' },
-                { key: 'workExperience', label: 'Work Experience', description: 'Part-time jobs, internships, or employment' },
-                { key: 'personalStatementEssay', label: 'Personal Statement/Essay', description: 'Common App essay or personal statement' },
-                { key: 'legacyStatus', label: 'Legacy Status', description: 'Family connection to the university' },
-                { key: 'admissionTestScores', label: 'Admission Test Scores', description: 'SAT, ACT, or other standardized tests' },
-                { key: 'englishProficiencyTest', label: 'English Proficiency Test', description: 'TOEFL, IELTS (for international students)' },
-              ].map((component) => (
-                <div
-                  key={component.key}
-                  className={`border rounded-lg p-4 transition-all duration-200 ${
-                    applicationComponents[component.key as keyof ApplicationComponents]
-                      ? 'border-green-200 bg-green-50'
-                      : 'border-gray-200 bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-start space-x-3">
-                    <button
-                      onClick={() => handleApplicationComponentChange(
-                        component.key as keyof ApplicationComponents,
-                        !applicationComponents[component.key as keyof ApplicationComponents]
-                      )}
-                      className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                        applicationComponents[component.key as keyof ApplicationComponents]
-                          ? 'border-green-500 bg-green-500 text-white'
-                          : 'border-gray-300 hover:border-green-400'
-                      }`}
-                    >
-                      {applicationComponents[component.key as keyof ApplicationComponents] && (
-                        <CheckCircle className="h-4 w-4" />
-                      )}
-                    </button>
-                    <div className="flex-1">
-                      <h3 className={`font-medium ${
-                        applicationComponents[component.key as keyof ApplicationComponents]
-                          ? 'text-green-800'
-                          : 'text-gray-900'
-                      }`}>
-                        {component.label}
-                      </h3>
-                      <p className={`text-sm mt-1 ${
-                        applicationComponents[component.key as keyof ApplicationComponents]
-                          ? 'text-green-600'
-                          : 'text-gray-600'
-                      }`}>
-                        {component.description}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Completion Summary */}
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-blue-900">Application Readiness</h3>
-                  <p className="text-blue-700 text-sm">
-                    {Object.values(applicationComponents).filter(Boolean).length} of {Object.keys(applicationComponents).length} components completed
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {Math.round((Object.values(applicationComponents).filter(Boolean).length / Object.keys(applicationComponents).length) * 100)}%
-                  </div>
-                  <div className="text-sm text-blue-600">Complete</div>
-                </div>
-              </div>
-              
-              {/* Progress Bar */}
-              <div className="mt-3">
-                <div className="w-full bg-blue-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{
-                      width: `${(Object.values(applicationComponents).filter(Boolean).length / Object.keys(applicationComponents).length) * 100}%`
-                    }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow-sm mb-8">
-          <div className="border-b border-gray-200">
-            <nav className="flex">
-              <button
-                onClick={() => setActiveTab('academic')}
-                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'academic'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <BookOpen className="h-4 w-4 inline mr-2" />
-                Academic Inputs
-              </button>
-              <button
-                onClick={() => setActiveTab('non-academic')}
-                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'non-academic'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <Award className="h-4 w-4 inline mr-2" />
-                Non-Academic Inputs
-              </button>
-            </nav>
-          </div>
-
-          <div className="p-6">
-            {activeTab === 'academic' && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Academic Information</h2>
-
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      GPA (4.0 scale) *
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      max="4.0"
-                      value={academicData.gpa}
-                      onChange={(e) => handleAcademicChange('gpa', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="3.8"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Intended Major
-                    </label>
-                    <select
-                      value={academicData.intendedMajor}
-                      onChange={(e) => handleAcademicChange('intendedMajor', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="">Select a major</option>
-                      <option value="Computer Science">Computer Science</option>
-                      <option value="Engineering">Engineering</option>
-                      <option value="Business">Business</option>
-                      <option value="Medicine">Medicine</option>
-                      <option value="Liberal Arts">Liberal Arts</option>
-                      <option value="Sciences">Sciences</option>
-                      <option value="Mathematics">Mathematics</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      SAT - EBRW (out of 800)
-                    </label>
-                    <input
-                      type="number"
-                      min="200"
-                      max="800"
-                      value={academicData.satEBRW}
-                      onChange={(e) => handleAcademicChange('satEBRW', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="720"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      SAT - Math (out of 800)
-                    </label>
-                    <input
-                      type="number"
-                      min="200"
-                      max="800"
-                      value={academicData.satMath}
-                      onChange={(e) => handleAcademicChange('satMath', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="730"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      ACT Score (out of 36)
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="36"
-                      value={academicData.actScore}
-                      onChange={(e) => handleAcademicChange('actScore', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="32"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Optional if SAT scores provided</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      TOEFL Score (International Students)
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="120"
-                      value={academicData.toeflScore}
-                      onChange={(e) => handleAcademicChange('toeflScore', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="105"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Number of AP Courses
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="20"
-                      value={academicData.apCourses}
-                      onChange={(e) => handleAcademicChange('apCourses', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="5"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      IB Score (out of 45)
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="45"
-                      value={academicData.ibScore}
-                      onChange={(e) => handleAcademicChange('ibScore', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="38"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'non-academic' && (
-              <div className="space-y-8">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Non-Academic Information</h2>
-
-                {/* Personal Statement */}
+              <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Personal Statement (Common App Essay)
+                    GPA (4.0 scale) *
                   </label>
-                  <textarea
-                    value={nonAcademicData.personalStatement}
-                    onChange={(e) => handleNonAcademicChange('personalStatement', e.target.value)}
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="4.0"
+                    value={academicData.gpa}
+                    onChange={(e) => handleAcademicChange('gpa', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={8}
-                    placeholder="Write your personal statement here..."
+                    placeholder="3.8"
+                    required
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {nonAcademicData.personalStatement.length} characters
-                  </p>
                 </div>
 
-                {/* Legacy Status and Citizenship */}
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Legacy Status
-                    </label>
-                    <div className="flex items-center space-x-4">
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          name="legacyStatus"
-                          checked={nonAcademicData.legacyStatus === true}
-                          onChange={() => handleNonAcademicChange('legacyStatus', true)}
-                          className="mr-2"
-                        />
-                        Yes
-                      </label>
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          name="legacyStatus"
-                          checked={nonAcademicData.legacyStatus === false}
-                          onChange={() => handleNonAcademicChange('legacyStatus', false)}
-                          className="mr-2"
-                        />
-                        No
-                      </label>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Citizenship
-                    </label>
-                    <div className="flex items-center space-x-4">
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          name="citizenship"
-                          checked={nonAcademicData.citizenship === 'domestic'}
-                          onChange={() => handleNonAcademicChange('citizenship', 'domestic')}
-                          className="mr-2"
-                        />
-                        Domestic
-                      </label>
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          name="citizenship"
-                          checked={nonAcademicData.citizenship === 'international'}
-                          onChange={() => handleNonAcademicChange('citizenship', 'international')}
-                          className="mr-2"
-                        />
-                        International
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Extracurricular Activities */}
                 <div>
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Extracurricular Activities</h3>
-                    <button
-                      onClick={addExtracurricular}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add Activity
-                    </button>
-                  </div>
-
-                  <div className="space-y-4">
-                    {extracurriculars.map((activity, index) => (
-                      <div key={activity.id} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-4">
-                          <h4 className="font-medium text-gray-900">Activity {index + 1}</h4>
-                          <button
-                            onClick={() => removeExtracurricular(activity.id)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Activity Type
-                            </label>
-                            <select
-                              value={activity.type}
-                              onChange={(e) => updateExtracurricular(activity.id, 'type', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                              <option value="Sports">Sports</option>
-                              <option value="Arts">Arts</option>
-                              <option value="Community Service">Community Service</option>
-                              <option value="Research">Research</option>
-                              <option value="Academic Clubs">Academic Clubs</option>
-                              <option value="Leadership">Leadership</option>
-                              <option value="Work Experience">Work Experience</option>
-                              <option value="Other">Other</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Activity Name
-                            </label>
-                            <input
-                              type="text"
-                              value={activity.name}
-                              onChange={(e) => updateExtracurricular(activity.id, 'name', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="e.g., Varsity Soccer"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Start Date
-                            </label>
-                            <input
-                              type="date"
-                              value={activity.startDate}
-                              onChange={(e) => updateExtracurricular(activity.id, 'startDate', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              End Date
-                            </label>
-                            <input
-                              type="date"
-                              value={activity.endDate}
-                              onChange={(e) => updateExtracurricular(activity.id, 'endDate', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Recognition Level
-                            </label>
-                            <select
-                              value={activity.recognitionLevel}
-                              onChange={(e) => updateExtracurricular(activity.id, 'recognitionLevel', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                              <option value="Local">Local</option>
-                              <option value="Regional">Regional</option>
-                              <option value="National">National</option>
-                              <option value="International">International</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Hours per Week
-                            </label>
-                            <input
-                              type="number"
-                              min="0"
-                              max="40"
-                              value={activity.hoursPerWeek}
-                              onChange={(e) => updateExtracurricular(activity.id, 'hoursPerWeek', parseInt(e.target.value) || 0)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="10"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="mt-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Description
-                          </label>
-                          <textarea
-                            value={activity.description}
-                            onChange={(e) => updateExtracurricular(activity.id, 'description', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            rows={2}
-                            placeholder="Describe your role and achievements..."
-                          />
-                        </div>
-                      </div>
-                    ))}
-
-                    {extracurriculars.length === 0 && (
-                      <div className="text-center py-8 text-gray-500">
-                        <Award className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                        <p>No extracurricular activities added yet.</p>
-                        <p className="text-sm">Click "Add Activity" to get started.</p>
-                      </div>
-                    )}
-                  </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Intended Major
+                  </label>
+                  <select
+                    value={academicData.intendedMajor}
+                    onChange={(e) => handleAcademicChange('intendedMajor', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select a major</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Business">Business</option>
+                    <option value="Medicine">Medicine</option>
+                    <option value="Liberal Arts">Liberal Arts</option>
+                    <option value="Sciences">Sciences</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
 
-                {/* Recommendation Letters */}
                 <div>
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Recommendation Letters</h3>
-                    <button
-                      onClick={addRecommendationLetter}
-                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add Letter
-                    </button>
-                  </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    SAT - EBRW (out of 800)
+                  </label>
+                  <input
+                    type="number"
+                    min="200"
+                    max="800"
+                    value={academicData.satEBRW}
+                    onChange={(e) => handleAcademicChange('satEBRW', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="720"
+                  />
+                </div>
 
-                  <div className="space-y-4">
-                    {recommendationLetters.map((letter, index) => (
-                      <div key={letter.id} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-4">
-                          <h4 className="font-medium text-gray-900">Recommendation {index + 1}</h4>
-                          <button
-                            onClick={() => removeRecommendationLetter(letter.id)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    SAT - Math (out of 800)
+                  </label>
+                  <input
+                    type="number"
+                    min="200"
+                    max="800"
+                    value={academicData.satMath}
+                    onChange={(e) => handleAcademicChange('satMath', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="730"
+                  />
+                </div>
 
-                        <div className="grid md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Source
-                            </label>
-                            <select
-                              value={letter.source}
-                              onChange={(e) => updateRecommendationLetter(letter.id, 'source', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                              <option value="Teacher">Teacher</option>
-                              <option value="Counselor">Counselor</option>
-                              <option value="Principal">Principal</option>
-                              <option value="Coach">Coach</option>
-                              <option value="Employer">Employer</option>
-                              <option value="Other">Other</option>
-                            </select>
-                          </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    ACT Score (out of 36)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="36"
+                    value={academicData.actScore}
+                    onChange={(e) => handleAcademicChange('actScore', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="32"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Optional if SAT scores provided</p>
+                </div>
 
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Subject (if Teacher)
-                            </label>
-                            <input
-                              type="text"
-                              value={letter.subject || ''}
-                              onChange={(e) => updateRecommendationLetter(letter.id, 'subject', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="e.g., Mathematics"
-                            />
-                          </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    TOEFL Score (International Students)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="120"
+                    value={academicData.toeflScore}
+                    onChange={(e) => handleAcademicChange('toeflScore', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="105"
+                  />
+                </div>
 
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Relationship
-                            </label>
-                            <input
-                              type="text"
-                              value={letter.relationship}
-                              onChange={(e) => updateRecommendationLetter(letter.id, 'relationship', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="e.g., AP Calculus teacher for 2 years"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Number of AP Courses
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="20"
+                    value={academicData.apCourses}
+                    onChange={(e) => handleAcademicChange('apCourses', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="5"
+                  />
+                </div>
 
-                    {recommendationLetters.length === 0 && (
-                      <div className="text-center py-8 text-gray-500">
-                        <User className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                        <p>No recommendation letters added yet.</p>
-                        <p className="text-sm">Click "Add Letter" to get started.</p>
-                      </div>
-                    )}
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    IB Score (out of 45)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="45"
+                    value={academicData.ibScore}
+                    onChange={(e) => handleAcademicChange('ibScore', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="38"
+                  />
                 </div>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Save Button */}
@@ -867,7 +342,6 @@ const StudentProfilePage: React.FC = () => {
             </button>
           </div>
         </div>
-
         {/* School Comparison Section */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">School Comparison</h2>
