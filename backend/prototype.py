@@ -207,10 +207,10 @@ def bucket(score: Optional[float]) -> str:
     if score is None or pd.isna(score):
         return "Unknown"
     if score >= 0.75:
-        return "Reach"
+        return "Likely"
     if score >= 0.45:
         return "Target"
-    return "Likely"
+    return "Reach"
 
 # ---------------------------
 # Recommendation pipeline
