@@ -125,8 +125,8 @@ def rigor_bonus(gpa: float, ap: int, ib: int, sat_ebrw: Optional[int] = None, sa
     else:
         ib_bump = 0.0
     
-    # Calculate the comprehensive score
-    score = (0.60 * gpa_norm) + (0.25 * sat_norm) + ap_bump + ib_bump
+    # Calculate the comprehensive score - give GPA even more weight
+    score = (0.75 * gpa_norm) + (0.15 * sat_norm) + ap_bump + ib_bump
     return float(np.clip(score, 0, 1))
 
 def pct_position(x: float, lo: float, hi: float) -> Optional[float]:
@@ -175,12 +175,12 @@ def compute_fit(student: Dict[str, Any], row: pd.Series) -> Optional[float]:
     return None
 
 def competitiveness(student: Dict[str, Any], row: pd.Series,
-                    w_fit=0.5, w_sel=0.3, w_rigor=0.2) -> Optional[float]:
+                    w_fit=0.25, w_sel=0.25, w_rigor=0.5) -> Optional[float]:
     fit = compute_fit(student, row)
     adm_rate = row.get("latest.admissions.admission_rate.overall")
     if pd.isna(adm_rate) and "ADM_RATE" in row:
         adm_rate = row.get("ADM_RATE")
-    sel = None if pd.isna(adm_rate) else float(np.clip(1 - adm_rate, 0, 1))
+    sel = None if pd.isna(adm_rate) else float(np.clip(adm_rate, 0, 1))  # Higher admission rate = easier = higher score
     rigor = rigor_bonus(
         student.get("gpa", 0) or 0, 
         int(student.get("apCourses", 0) or 0), 
@@ -201,6 +201,13 @@ def competitiveness(student: Dict[str, Any], row: pd.Series,
         return None
 
     score = float(np.average(pieces, weights=weights))
+    
+    # Apply extremely harsh GPA penalty - elite schools absolutely require strong GPAs
+    gpa = student.get("gpa", 0) or 0
+    if gpa < 3.0:
+        # Exponential penalty: 2.0 GPA gets ~0.8 penalty, 2.5 gets ~0.5 penalty  
+        gpa_penalty = (3.0 - gpa) ** 2 * 0.2
+        score = score - gpa_penalty  # Remove floor now that selectivity is fixed
     return float(np.clip(score, 0, 1))
 
 def bucket(score: Optional[float]) -> str:
