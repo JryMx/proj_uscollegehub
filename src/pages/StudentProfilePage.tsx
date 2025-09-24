@@ -138,6 +138,7 @@ const StudentProfilePage: React.FC = () => {
       awards: [],
     };
 
+
     await updateProfile(profileData);
     setShowResults(true);
   };
