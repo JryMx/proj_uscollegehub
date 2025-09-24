@@ -135,7 +135,10 @@ def pct_position(x: float, lo: float, hi: float) -> Optional[float]:
     return float(np.clip((x - lo) / (hi - lo), 0, 1))
 
 def compute_fit(student: Dict[str, Any], row: pd.Series) -> Optional[float]:
-    sat_total = student.get("sat_total")
+    # Combine SAT scores if provided separately
+    sat_ebrw = student.get("satEBRW", 0) or 0
+    sat_math = student.get("satMath", 0) or 0
+    sat_total = (sat_ebrw + sat_math) if (sat_ebrw > 0 or sat_math > 0) else student.get("sat_total")
     act = student.get("act")
 
     SATMT25, SATMT75 = row.get("SATMT25"), row.get("SATMT75")
@@ -178,7 +181,13 @@ def competitiveness(student: Dict[str, Any], row: pd.Series,
     if pd.isna(adm_rate) and "ADM_RATE" in row:
         adm_rate = row.get("ADM_RATE")
     sel = None if pd.isna(adm_rate) else float(np.clip(1 - adm_rate, 0, 1))
-    rigor = rigor_bonus(student.get("gpa", 0) or 0, int(student.get("ap", 0) or 0), int(student.get("ib", 0) or 0))
+    rigor = rigor_bonus(
+        student.get("gpa", 0) or 0, 
+        int(student.get("apCourses", 0) or 0), 
+        int(student.get("ibScore", 0) or 0),
+        student.get("satEBRW", 0),
+        student.get("satMath", 0)
+    )
 
     pieces, weights = [], []
     if fit is not None:

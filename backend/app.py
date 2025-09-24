@@ -115,7 +115,7 @@ def get_university_data():
 
 @app.route('/api/calculate-profile-score', methods=['POST'])
 def calculate_profile_score():
-    """Calculate the student's profile rigor score using prototype.py logic only"""
+    """Calculate the student's profile rigor score and return university recommendations"""
     try:
         student_data = request.json
         
@@ -128,8 +128,53 @@ def calculate_profile_score():
             student_data.get('satMath', 0)
         ) * 100  # Convert to 0-100 scale
         
+        # Get university recommendations
+        df = get_university_data()
+        
+        # Use student data in the format expected by our updated functions
+        student_profile = {
+            "gpa": student_data.get('gpa', 0),
+            "satEBRW": student_data.get('satEBRW', 0),
+            "satMath": student_data.get('satMath', 0),
+            "act": student_data.get('actScore', 0),
+            "apCourses": student_data.get('apCourses', 0),
+            "ibScore": student_data.get('ibScore', 0),
+            "intendedMajor": student_data.get('intendedMajor', ''),
+        }
+        
+        # Get recommendations limited to ~10 schools per bucket
+        recommendations_df = recommend(df, student_profile, max_per_bucket=10)
+        
+        # Convert to list and group by bucket
+        recommendations = recommendations_df.to_dict('records')
+        
+        # Group recommendations by bucket
+        grouped_recommendations = {
+            'Likely': [],
+            'Target': [],
+            'Reach': []
+        }
+        
+        for rec in recommendations:
+            bucket = rec.get('bucket', 'Unknown')
+            if bucket in grouped_recommendations:
+                # Format the recommendation for frontend
+                school_data = {
+                    'name': rec.get('school.name', ''),
+                    'city': rec.get('school.city', ''),
+                    'state': rec.get('school.state', ''),
+                    'admissionRate': rec.get('latest.admissions.admission_rate.overall', 0) * 100 if rec.get('latest.admissions.admission_rate.overall') else None,
+                    'satMathMidpoint': rec.get('latest.admissions.sat_scores.midpoint.math', None),
+                    'satReadingMidpoint': rec.get('latest.admissions.sat_scores.midpoint.critical_reading', None),
+                    'actMidpoint': rec.get('latest.admissions.act_scores.midpoint.cumulative', None),
+                    'competitivenessScore': round(rec.get('score', 0) * 100, 1),
+                    'bucket': bucket
+                }
+                grouped_recommendations[bucket].append(school_data)
+        
         return jsonify({
-            'rigor_score': round(rigor_score, 1)
+            'rigor_score': round(rigor_score, 1),
+            'recommendations': grouped_recommendations
         })
     
     except Exception as e:
