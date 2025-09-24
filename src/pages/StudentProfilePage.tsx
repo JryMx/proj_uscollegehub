@@ -31,6 +31,8 @@ const StudentProfilePage: React.FC = () => {
   };
 
   const handleSaveProfile = async () => {
+    setIsLoading(true);
+    
     const profileData = {
       gpa: parseFloat(academicData.gpa) || 0,
       satEBRW: parseInt(academicData.satEBRW) || 0,
@@ -51,12 +53,22 @@ const StudentProfilePage: React.FC = () => {
       intendedMajor: '',
     };
 
-    const updatedProfile = await updateProfile(profileData);
-    if (updatedProfile) {
-      setCurrentCalculatedScore(updatedProfile.profileRigorScore);
-      setCurrentRecommendations(updatedProfile.recommendations || []);
+    try {
+      console.log('Sending profile data:', profileData);
+      const updatedProfile = await updateProfile(profileData);
+      console.log('Received updated profile:', updatedProfile);
+      
+      if (updatedProfile) {
+        setCurrentCalculatedScore(updatedProfile.profileRigorScore);
+        setCurrentRecommendations(updatedProfile.recommendations || []);
+        setShowResults(true);
+      }
+    } catch (error) {
+      console.error('Error in handleSaveProfile:', error);
+      alert('Error calculating profile score. Please check the console for details.');
+    } finally {
+      setIsLoading(false);
     }
-    setShowResults(true);
   };
 
   const [isLoading, setIsLoading] = useState(false);

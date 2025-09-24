@@ -128,6 +128,7 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
 
   const calculateProfileScore = async (profileData: Partial<StudentProfile>): Promise<{score: number, recommendations: SchoolRecommendation[]}> => {
     try {
+      console.log('Making API request to calculate profile score...');
       const response = await fetch(`${API_BASE_URL}/calculate-profile-score`, {
         method: 'POST',
         headers: {
@@ -136,11 +137,16 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
         body: JSON.stringify(profileData),
       });
       
+      console.log('API response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to calculate profile score');
+        const errorText = await response.text();
+        console.error('API error response:', errorText);
+        throw new Error(`Failed to calculate profile score: ${response.status} ${errorText}`);
       }
       
       const data = await response.json();
+      console.log('API response data:', data);
       
       // Transform backend recommendations to frontend format
       const transformedRecommendations: SchoolRecommendation[] = [];
@@ -168,8 +174,8 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
       };
     } catch (error) {
       console.error('Error calculating profile score:', error);
-      // Return 0 if backend is unavailable - only prototype.py should calculate scores
-      return { score: 0, recommendations: [] };
+      // Re-throw the error so it can be handled by the calling function
+      throw error;
     }
   };
 
