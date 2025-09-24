@@ -155,7 +155,7 @@ const DashboardPage: React.FC = () => {
                           </div>
                           <div className="text-right">
                             <p className="text-lg font-bold text-green-600">{rec.admissionChance}%</p>
-                            <p className="text-xs text-gray-600">admission chance</p>
+                            <p className="text-xs text-gray-600">match score</p>
                           </div>
                         </div>
                       </div>
@@ -188,7 +188,7 @@ const DashboardPage: React.FC = () => {
                           </div>
                           <div className="text-right">
                             <p className="text-lg font-bold text-orange-600">{rec.admissionChance}%</p>
-                            <p className="text-xs text-gray-600">admission chance</p>
+                            <p className="text-xs text-gray-600">match score</p>
                           </div>
                         </div>
                       </div>
@@ -229,7 +229,7 @@ const DashboardPage: React.FC = () => {
                           </div>
                           <div className="text-right">
                             <p className="text-lg font-bold text-blue-600">{rec.admissionChance}%</p>
-                            <p className="text-xs text-gray-600">admission chance</p>
+                            <p className="text-xs text-gray-600">match score</p>
                           </div>
                         </div>
                       </div>
