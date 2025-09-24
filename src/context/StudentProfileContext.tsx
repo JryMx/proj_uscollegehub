@@ -144,32 +144,11 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
       return data.rigor_score;
     } catch (error) {
       console.error('Error calculating profile score:', error);
-      // Fallback to local calculation if backend is unavailable
-      return calculateLocalProfileScore(profileData);
+      // Return 0 if backend is unavailable - only prototype.py should calculate scores
+      return 0;
     }
   };
 
-  const calculateLocalProfileScore = (profileData: Partial<StudentProfile>): number => {
-    // Fallback local calculation (simplified version)
-    let score = 0;
-    
-    if (profileData.gpa) {
-      score += (profileData.gpa / 4.0) * 25;
-    }
-    
-    if (profileData.satEBRW && profileData.satMath) {
-      const totalSAT = profileData.satEBRW + profileData.satMath;
-      score += (totalSAT / 1600) * 20;
-    } else if (profileData.actScore) {
-      score += (profileData.actScore / 36) * 20;
-    }
-    
-    if (profileData.apCourses) {
-      score += Math.min(profileData.apCourses / 8, 1) * 15;
-    }
-    
-    return Math.round(Math.min(score, 100));
-  };
 
   const updateProfile = async (newProfileData: Partial<StudentProfile>) => {
     const updatedProfile = profile ? { ...profile, ...newProfileData } : {
