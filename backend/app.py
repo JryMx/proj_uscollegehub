@@ -30,12 +30,40 @@ university_cache = None
 last_cache_update = None
 
 def get_university_data():
-    """Get university data, using cache if available"""
+    """Get university data from College Scorecard API, using cache if available"""
     global university_cache, last_cache_update
     
-    # For now, return mock data. In production, you'd fetch from College Scorecard
+    # Use real College Scorecard API with the provided key
     if university_cache is None:
-        university_cache = pd.DataFrame([
+        api_key = os.environ.get('COLLEGE_SCORECARD_API_KEY')
+        if api_key:
+            try:
+                # Fetch diverse universities from different states and types
+                print("Fetching university data from College Scorecard API...")
+                university_cache = fetch_scorecard(
+                    api_key=api_key,
+                    per_page=100,
+                    max_pages=2,  # Get about 200 schools for variety
+                    extra_filters={
+                        "latest.admissions.admission_rate.overall__range": "0.0..1.0",  # Has admission rate data
+                        "latest.admissions.sat_scores.midpoint.math__range": "400..800",  # Has SAT data
+                        "latest.student.size__range": "1000.."  # Reasonable size schools
+                    }
+                )
+                print(f"Fetched {len(university_cache)} universities from College Scorecard API")
+            except Exception as e:
+                print(f"Error fetching from College Scorecard API: {e}")
+                print("Falling back to mock data...")
+                university_cache = get_mock_data()
+        else:
+            print("No College Scorecard API key found, using mock data")
+            university_cache = get_mock_data()
+    
+    return university_cache
+
+def get_mock_data():
+    """Fallback mock data if API fails"""
+    return pd.DataFrame([
             {
                 'id': '1',
                 'school.name': 'Harvard University',
