@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:backend": "cd backend && python app.py",
-    "dev:fullstack": "npm run dev:backend & npm run dev",
+    "dev:fullstack": "npm run dev:backend & while ! nc -z localhost 5001; do sleep 1; done && npm run dev",
     "build": "vite build",
     "start": "npm run dev:fullstack",
     "lint": "eslint .",
