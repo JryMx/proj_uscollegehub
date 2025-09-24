@@ -235,7 +235,7 @@ def _prompt_str(label: str, default: str = "", required: bool = False) -> str:
             return val
         print("This field is required.")
 
-def _prompt_float(label: str, default: float = None, required: bool = False, lo=None, hi=None):
+def _prompt_float(label: str, default: Optional[float] = None, required: bool = False, lo=None, hi=None):
     while True:
         raw = input(f"{label}" + (f" [{default}]" if default is not None else "") + ": ").strip()
         if not raw and default is not None:
@@ -252,7 +252,7 @@ def _prompt_float(label: str, default: float = None, required: bool = False, lo=
         except ValueError:
             print("Please enter a number.")
 
-def _prompt_int(label: str, default: int = None, required: bool = False, lo=None, hi=None):
+def _prompt_int(label: str, default: Optional[int] = None, required: bool = False, lo=None, hi=None):
     f = _prompt_float(label, default, required, lo, hi)
     return None if f is None else int(f)
 
