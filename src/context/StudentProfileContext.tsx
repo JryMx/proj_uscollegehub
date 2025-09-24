@@ -80,7 +80,7 @@ export interface SchoolRecommendation {
 interface StudentProfileContextType {
   profile: StudentProfile | null;
   updateProfile: (profile: Partial<StudentProfile>) => void;
-  calculateProfileScore: (profile: Partial<StudentProfile>) => number;
+  calculateProfileScore: (profile: Partial<StudentProfile>) => Promise<{score: number, recommendations: SchoolRecommendation[]}>;
   getRecommendations: () => SchoolRecommendation[];
   searchSchools: (query: string) => SchoolSearchResult[];
 }
@@ -126,7 +126,7 @@ const schoolsDatabase = [
 export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ children }) => {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
 
-  const calculateProfileScore = async (profileData: Partial<StudentProfile>): Promise<number> => {
+  const calculateProfileScore = async (profileData: Partial<StudentProfile>): Promise<{score: number, recommendations: SchoolRecommendation[]}> => {
     try {
       const response = await fetch(`${API_BASE_URL}/calculate-profile-score`, {
         method: 'POST',
@@ -141,11 +141,35 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
       }
       
       const data = await response.json();
-      return data.rigor_score;
+      
+      // Transform backend recommendations to frontend format
+      const transformedRecommendations: SchoolRecommendation[] = [];
+      
+      // Process each bucket (Likely, Target, Reach)
+      Object.entries(data.recommendations || {}).forEach(([bucket, schools]) => {
+        (schools as any[]).forEach((school) => {
+          const category = bucket.toLowerCase() === 'likely' ? 'safety' : 
+                          bucket.toLowerCase() === 'target' ? 'target' : 'reach';
+          
+          transformedRecommendations.push({
+            universityId: school.name.replace(/\s+/g, '').toLowerCase(),
+            category: category as 'safety' | 'target' | 'reach',
+            admissionChance: school.competitivenessScore / 100,
+            strengthenAreas: [`Improve ${bucket.toLowerCase()} profile areas`],
+            requiredScore: 80, // Default, can be refined
+            comparisonRatio: school.competitivenessScore / 100
+          });
+        });
+      });
+      
+      return {
+        score: data.rigor_score,
+        recommendations: transformedRecommendations
+      };
     } catch (error) {
       console.error('Error calculating profile score:', error);
       // Return 0 if backend is unavailable - only prototype.py should calculate scores
-      return 0;
+      return { score: 0, recommendations: [] };
     }
   };
 
@@ -199,12 +223,10 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
     };
     
     try {
-      // Calculate profile rigor score and wait for it to complete
-      const score = await calculateProfileScore(updatedProfile);
-      updatedProfile.profileRigorScore = score;
-      
-      // Generate recommendations after score is calculated
-      updatedProfile.recommendations = generateRecommendations(updatedProfile);
+      // Calculate profile rigor score and get recommendations from backend
+      const result = await calculateProfileScore(updatedProfile);
+      updatedProfile.profileRigorScore = result.score;
+      updatedProfile.recommendations = result.recommendations;
       
       // Update profile with calculated score and recommendations
       setProfile(updatedProfile);

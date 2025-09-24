@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, BookOpen, Award, Target, ArrowRight, Plus, X, Search, Calculator, CheckCircle, XCircle, ClipboardList } from 'lucide-react';
-import { useStudentProfile, ExtracurricularActivity, RecommendationLetter, ApplicationComponents } from '../context/StudentProfileContext';
+import { useStudentProfile, ExtracurricularActivity, RecommendationLetter, ApplicationComponents, SchoolRecommendation } from '../context/StudentProfileContext';
 
 const StudentProfilePage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ const StudentProfilePage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [currentCalculatedScore, setCurrentCalculatedScore] = useState<number>(0);
+  const [currentRecommendations, setCurrentRecommendations] = useState<any[]>([]);
 
   // Application Components Checker
   const [applicationComponents, setApplicationComponents] = useState<ApplicationComponents>(
@@ -138,8 +139,11 @@ const StudentProfilePage: React.FC = () => {
       awards: [],
     };
 
-
-    await updateProfile(profileData);
+    const updatedProfile = await updateProfile(profileData);
+    if (updatedProfile) {
+      setCurrentCalculatedScore(updatedProfile.profileRigorScore);
+      setCurrentRecommendations(updatedProfile.recommendations || []);
+    }
     setShowResults(true);
   };
 
@@ -200,6 +204,67 @@ const StudentProfilePage: React.FC = () => {
                (currentCalculatedScore || profile?.profileRigorScore || 0) >= 70 ? 'Good' : 
                (currentCalculatedScore || profile?.profileRigorScore || 0) >= 60 ? 'Fair' : 'Needs Improvement'}
             </p>
+          </div>
+        )}
+
+        {/* University Recommendations */}
+        {(currentRecommendations.length > 0 || (profile && profile.recommendations && profile.recommendations.length > 0)) && (
+          <div className="mb-8">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">University Recommendations</h2>
+              <p className="text-gray-600">Based on your academic profile and competitiveness analysis</p>
+            </div>
+            
+            {['reach', 'target', 'safety'].map((category) => {
+              const categoryRecommendations = (currentRecommendations.length > 0 ? currentRecommendations : profile?.recommendations || [])
+                .filter((rec: SchoolRecommendation) => rec.category === category);
+              
+              if (categoryRecommendations.length === 0) return null;
+              
+              const categoryTitle = category === 'safety' ? 'Likely Schools' : 
+                                  category === 'target' ? 'Target Schools' : 'Reach Schools';
+              const categoryColor = category === 'safety' ? 'green' : 
+                                   category === 'target' ? 'blue' : 'orange';
+              
+              return (
+                <div key={category} className="mb-6">
+                  <h3 className={`text-xl font-bold mb-4 text-${categoryColor}-700`}>
+                    {categoryTitle} ({categoryRecommendations.length})
+                  </h3>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {categoryRecommendations.map((recommendation: SchoolRecommendation, index: number) => (
+                      <div 
+                        key={`${recommendation.universityId}-${index}`}
+                        className={`bg-white border-l-4 border-${categoryColor}-500 rounded-lg shadow-sm p-4`}
+                        data-testid={`recommendation-${category}-${index}`}
+                      >
+                        <h4 className="font-bold text-gray-900 mb-2">{recommendation.universityId}</h4>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Admission Chance:</span>
+                            <span className={`font-medium text-${categoryColor}-600`}>
+                              {Math.round(recommendation.admissionChance * 100)}%
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Match Score:</span>
+                            <span className="font-medium">
+                              {Math.round(recommendation.comparisonRatio * 100)}/100
+                            </span>
+                          </div>
+                          {recommendation.requiredScore && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Required Score:</span>
+                              <span className="font-medium">{recommendation.requiredScore}/100</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
