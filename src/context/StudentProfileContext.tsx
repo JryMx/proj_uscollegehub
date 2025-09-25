@@ -220,18 +220,16 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
         if (profileScore < 85) strengthenAreas.push('Advanced Coursework (AP/IB)');
       }
 
-      // Calculate a more realistic profile match percentage
+      // Calculate profile match percentage directly from comparison ratio
+      // This ensures consistency: higher ratios = higher match percentages
       let profileMatchPercentage: number;
       
-      if (category === 'safety') {
-        // Safety schools: 75-95% match (you're well-qualified)
-        profileMatchPercentage = Math.min(95, 75 + (comparisonRatio - 1.1) * 50);
-      } else if (category === 'target') {
-        // Target schools: 60-85% match (good fit)
-        profileMatchPercentage = 60 + (comparisonRatio - 0.9) * 125;
+      if (comparisonRatio >= 1.0) {
+        // Above or at school requirements: 85-95% match
+        profileMatchPercentage = Math.min(95, 85 + (comparisonRatio - 1.0) * 20);
       } else {
-        // Reach schools: 30-70% match (below typical profile)
-        profileMatchPercentage = Math.max(30, comparisonRatio * 70);
+        // Below school requirements: scale from 30-84% based on how close you are
+        profileMatchPercentage = Math.max(30, comparisonRatio * 84);
       }
 
       recommendations.push({
@@ -244,13 +242,16 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
       });
     });
 
-    // Sort by category and then by admission chance
-    const categoryOrder = { 'safety': 0, 'target': 1, 'reach': 2 };
+    // Sort by match percentage (highest first), then by category
     recommendations.sort((a, b) => {
-      if (a.category !== b.category) {
-        return categoryOrder[a.category] - categoryOrder[b.category];
+      // First sort by match percentage (descending)
+      const matchDiff = b.admissionChance - a.admissionChance;
+      if (Math.abs(matchDiff) > 0.01) { // Only consider significant differences
+        return matchDiff;
       }
-      return b.admissionChance - a.admissionChance; // Higher match percentage first
+      // If match percentages are very close, sort by category
+      const categoryOrder = { 'safety': 0, 'target': 1, 'reach': 2 };
+      return categoryOrder[a.category] - categoryOrder[b.category];
     });
 
     // Limit to top recommendations per category
