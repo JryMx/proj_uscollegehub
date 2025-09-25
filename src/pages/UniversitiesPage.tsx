@@ -141,7 +141,7 @@ const UniversitiesPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -162,20 +162,20 @@ const UniversitiesPage: React.FC = () => {
               <input
                 type="text"
                 placeholder="Search universities by name or location..."
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
 
             {/* View Toggle */}
-            <div className="flex items-center bg-white border border-gray-300 rounded-lg p-1">
+            <div className="flex items-center bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-1">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-2 rounded ${
                   viewMode === 'grid'
                     ? 'bg-blue-500 text-white'
-                    : 'text-gray-600 hover:text-blue-500'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400'
                 }`}
               >
                 <Grid className="h-5 w-5" />
@@ -185,7 +185,7 @@ const UniversitiesPage: React.FC = () => {
                 className={`p-2 rounded ${
                   viewMode === 'list'
                     ? 'bg-blue-500 text-white'
-                    : 'text-gray-600 hover:text-blue-500'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400'
                 }`}
               >
                 <List className="h-5 w-5" />
@@ -194,16 +194,16 @@ const UniversitiesPage: React.FC = () => {
           </div>
 
           {/* Filters */}
-          <div className="bg-white p-4 rounded-lg shadow-sm border">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors">
             <div className="flex items-center mb-3">
-              <Filter className="h-5 w-5 text-gray-500 mr-2" />
-              <span className="font-medium text-gray-700">Filters</span>
+              <Filter className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+              <span className="font-medium text-gray-700 dark:text-gray-300">Filters</span>
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {/* Type Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
                 <div className="space-y-1">
                   <label className="flex items-center">
                     <input
@@ -212,7 +212,7 @@ const UniversitiesPage: React.FC = () => {
                       onChange={() => handleFilterChange('type', 'Private')}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm">Private</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Private</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -221,14 +221,14 @@ const UniversitiesPage: React.FC = () => {
                       onChange={() => handleFilterChange('type', 'Public')}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm">Public</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Public</span>
                   </label>
                 </div>
               </div>
 
               {/* Size Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Size</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Size</label>
                 <div className="space-y-1">
                   <label className="flex items-center">
                     <input
@@ -237,7 +237,7 @@ const UniversitiesPage: React.FC = () => {
                       onChange={() => handleFilterChange('size', 'Small (<5,000)')}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm">Small</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Small</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -246,7 +246,7 @@ const UniversitiesPage: React.FC = () => {
                       onChange={() => handleFilterChange('size', 'Medium (5,000-15,000)')}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm">Medium</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Medium</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -255,14 +255,14 @@ const UniversitiesPage: React.FC = () => {
                       onChange={() => handleFilterChange('size', 'Large (15,000+)')}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm">Large</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Large</span>
                   </label>
                 </div>
               </div>
 
               {/* Ranking Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Ranking</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ranking</label>
                 <div className="space-y-1">
                   <label className="flex items-center">
                     <input
@@ -271,7 +271,7 @@ const UniversitiesPage: React.FC = () => {
                       onChange={() => handleFilterChange('ranking', 'top10')}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm">Top 10</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Top 10</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -280,14 +280,14 @@ const UniversitiesPage: React.FC = () => {
                       onChange={() => handleFilterChange('ranking', 'top50')}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm">Top 50</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Top 50</span>
                   </label>
                 </div>
               </div>
 
               {/* Tuition Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tuition</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tuition</label>
                 <div className="space-y-1">
                   <label className="flex items-center">
                     <input
@@ -296,7 +296,7 @@ const UniversitiesPage: React.FC = () => {
                       onChange={() => handleFilterChange('tuition', 'under30k')}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm">Under $30K</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Under $30K</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -305,7 +305,7 @@ const UniversitiesPage: React.FC = () => {
                       onChange={() => handleFilterChange('tuition', '30k-50k')}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm">$30K-$50K</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">$30K-$50K</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -314,7 +314,7 @@ const UniversitiesPage: React.FC = () => {
                       onChange={() => handleFilterChange('tuition', 'over50k')}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm">Over $50K</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Over $50K</span>
                   </label>
                 </div>
               </div>
@@ -324,7 +324,7 @@ const UniversitiesPage: React.FC = () => {
 
         {/* Results */}
         <div className="mb-6">
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Showing {filteredUniversities.length} of {universities.length} universities
           </p>
         </div>
@@ -352,33 +352,33 @@ const UniversitiesPage: React.FC = () => {
               <div className={`p-6 ${viewMode === 'list' ? 'w-2/3 flex flex-col justify-between' : ''}`}>
                 <div>
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-bold text-gray-900">{university.name}</h3>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">{university.name}</h3>
                     <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2 py-1 rounded-full">
                       #{university.ranking}
                     </span>
                   </div>
                   
-                  <div className="flex items-center text-gray-600 mb-3">
+                  <div className="flex items-center text-gray-600 dark:text-gray-400 mb-3">
                     <MapPin className="h-4 w-4 mr-1" />
                     <span className="text-sm">{university.location}</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
                     <div className="flex items-center">
-                      <Users className="h-4 w-4 text-gray-400 mr-2" />
-                      <span>{university.acceptanceRate}% acceptance</span>
+                      <Users className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
+                      <span className="text-gray-700 dark:text-gray-300">{university.acceptanceRate}% acceptance</span>
                     </div>
                     <div className="flex items-center">
-                      <DollarSign className="h-4 w-4 text-gray-400 mr-2" />
-                      <span>${university.tuition.toLocaleString()}</span>
+                      <DollarSign className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
+                      <span className="text-gray-700 dark:text-gray-300">${university.tuition.toLocaleString()}</span>
                     </div>
                     <div className="flex items-center">
-                      <BookOpen className="h-4 w-4 text-gray-400 mr-2" />
-                      <span>SAT: {university.satRange}</span>
+                      <BookOpen className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
+                      <span className="text-gray-700 dark:text-gray-300">SAT: {university.satRange}</span>
                     </div>
                     <div className="flex items-center">
-                      <BookOpen className="h-4 w-4 text-gray-400 mr-2" />
-                      <span>ACT: {university.actRange}</span>
+                      <BookOpen className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
+                      <span className="text-gray-700 dark:text-gray-300">ACT: {university.actRange}</span>
                     </div>
                   </div>
 
@@ -387,13 +387,13 @@ const UniversitiesPage: React.FC = () => {
                       {university.programs.slice(0, 3).map(program => (
                         <span
                           key={program}
-                          className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
+                          className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs px-2 py-1 rounded-full"
                         >
                           {program}
                         </span>
                       ))}
                       {university.programs.length > 3 && (
-                        <span className="text-gray-500 text-xs">
+                        <span className="text-gray-500 dark:text-gray-400 text-xs">
                           +{university.programs.length - 3} more
                         </span>
                       )}
@@ -403,7 +403,7 @@ const UniversitiesPage: React.FC = () => {
 
                 <Link
                   to={`/university/${university.id}`}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center font-medium transition-colors inline-block"
+                  className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-center font-medium transition-colors inline-block"
                 >
                   View Details
                 </Link>
@@ -414,10 +414,10 @@ const UniversitiesPage: React.FC = () => {
 
         {filteredUniversities.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No universities match your current filters.</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg">No universities match your current filters.</p>
             <button
               onClick={() => setFilters({ type: '', size: '', ranking: '', tuition: '' })}
-              className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
+              className="mt-4 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
             >
               Clear all filters
             </button>
