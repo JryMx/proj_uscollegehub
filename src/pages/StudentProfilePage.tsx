@@ -122,26 +122,30 @@ const StudentProfilePage: React.FC = () => {
               
               const categoryTitle = category === 'safety' ? 'Likely Schools' : 
                                   category === 'target' ? 'Target Schools' : 'Reach Schools';
-              const categoryColor = category === 'safety' ? 'green' : 
-                                   category === 'target' ? 'blue' : 'orange';
+              const categoryColorClasses = category === 'safety' ? 'text-green-700 dark:text-green-400' : 
+                                         category === 'target' ? 'text-blue-700 dark:text-blue-400' : 'text-orange-700 dark:text-orange-400';
+              const borderColorClass = category === 'safety' ? 'border-green-500' : 
+                                     category === 'target' ? 'border-blue-500' : 'border-orange-500';
+              const textColorClass = category === 'safety' ? 'text-green-600 dark:text-green-400' : 
+                                   category === 'target' ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400';
               
               return (
                 <div key={category} className="mb-6">
-                  <h3 className={`text-xl font-bold mb-4 text-${categoryColor}-700`}>
+                  <h3 className={`text-xl font-bold mb-4 ${categoryColorClasses}`}>
                     {categoryTitle} ({categoryRecommendations.length})
                   </h3>
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {categoryRecommendations.map((recommendation: SchoolRecommendation, index: number) => (
                       <div 
                         key={`${recommendation.universityId}-${index}`}
-                        className={`bg-white dark:bg-gray-800 border-l-4 border-${categoryColor}-500 rounded-lg shadow-sm p-4`}
+                        className={`bg-white dark:bg-gray-800 border-l-4 ${borderColorClass} rounded-lg shadow-sm p-4`}
                         data-testid={`recommendation-${category}-${index}`}
                       >
                         <h4 className="font-bold text-gray-900 dark:text-white mb-2">{recommendation.universityId}</h4>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
                             <span className="text-gray-600 dark:text-gray-400">Profile Match:</span>
-                            <span className={`font-medium text-${categoryColor}-600`}>
+                            <span className={`font-medium ${textColorClass}`}>
                               {Math.round(recommendation.admissionChance * 100)}%
                             </span>
                           </div>
