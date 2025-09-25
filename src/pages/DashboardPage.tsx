@@ -337,13 +337,6 @@ const DashboardPage: React.FC = () => {
                 </Link>
                 
                 <Link
-                  to="/compare"
-                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors text-center block"
-                >
-                  Compare Schools
-                </Link>
-                
-                <Link
                   to="/student-profile"
                   className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors text-center block"
                 >
