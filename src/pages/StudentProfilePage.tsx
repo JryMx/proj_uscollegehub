@@ -87,8 +87,7 @@ const StudentProfilePage: React.FC = () => {
             Profile Analysis
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Complete your academic and non-academic profile to get a comprehensive rigor score 
-            and personalized university recommendations.
+            Input your academic information to get personalized university recommendations.
           </p>
         </div>
 
