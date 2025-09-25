@@ -54,9 +54,9 @@ const StudentProfilePage: React.FC = () => {
     };
 
     try {
-      console.log('Sending profile data:', profileData);
+      console.log('Mock: Sending profile data:', profileData);
       const updatedProfile = await updateProfile(profileData);
-      console.log('Received updated profile:', updatedProfile);
+      console.log('Mock: Received updated profile:', updatedProfile);
       
       if (updatedProfile) {
         setCurrentCalculatedScore(updatedProfile.profileRigorScore);
@@ -65,7 +65,7 @@ const StudentProfilePage: React.FC = () => {
       }
     } catch (error) {
       console.error('Error in handleSaveProfile:', error);
-      alert('Error calculating profile score. Please check the console for details.');
+      alert('Error calculating profile score: ' + (error as Error).message);
     } finally {
       setIsLoading(false);
     }

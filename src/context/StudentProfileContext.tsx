@@ -1,10 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-// API base URL - adjust for your backend deployment
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-backend-url.com/api' 
-  : '/api';
-
 export interface StudentProfile {
   // Academic Inputs
   gpa: number;
@@ -79,7 +74,7 @@ export interface SchoolRecommendation {
 
 interface StudentProfileContextType {
   profile: StudentProfile | null;
-  updateProfile: (profile: Partial<StudentProfile>) => void;
+  updateProfile: (profile: Partial<StudentProfile>) => Promise<StudentProfile>;
   calculateProfileScore: (profile: Partial<StudentProfile>) => Promise<{score: number, recommendations: SchoolRecommendation[]}>;
   getRecommendations: () => SchoolRecommendation[];
   searchSchools: (query: string) => SchoolSearchResult[];
@@ -109,78 +104,155 @@ interface StudentProfileProviderProps {
   children: ReactNode;
 }
 
-// Mock school data with required scores
-const schoolsDatabase = [
-  { id: '1', name: 'Harvard University', requiredScore: 95, ranking: 2, acceptanceRate: 5.4 },
-  { id: '2', name: 'Stanford University', requiredScore: 94, ranking: 3, acceptanceRate: 4.8 },
-  { id: '3', name: 'MIT', requiredScore: 93, ranking: 4, acceptanceRate: 7.3 },
-  { id: '4', name: 'Yale University', requiredScore: 92, ranking: 5, acceptanceRate: 6.9 },
-  { id: '5', name: 'Princeton University', requiredScore: 91, ranking: 1, acceptanceRate: 5.8 },
-  { id: '6', name: 'UC Berkeley', requiredScore: 78, ranking: 22, acceptanceRate: 17.5 },
-  { id: '7', name: 'NYU', requiredScore: 72, ranking: 28, acceptanceRate: 21.1 },
-  { id: '8', name: 'Penn State', requiredScore: 65, ranking: 63, acceptanceRate: 76.0 },
-  { id: '9', name: 'University of Michigan', requiredScore: 80, ranking: 21, acceptanceRate: 26.0 },
-  { id: '10', name: 'UCLA', requiredScore: 82, ranking: 20, acceptanceRate: 14.3 },
+// Mock database of 25 U.S. universities with varying difficulties
+const universitiesDatabase = [
+  // Ivy League & Top Tier (Very Hard)
+  { id: '1', name: 'Harvard University', requiredScore: 95, ranking: 2, acceptanceRate: 5.4, location: 'Cambridge, MA' },
+  { id: '2', name: 'Stanford University', requiredScore: 94, ranking: 3, acceptanceRate: 4.8, location: 'Stanford, CA' },
+  { id: '3', name: 'MIT', requiredScore: 93, ranking: 4, acceptanceRate: 7.3, location: 'Cambridge, MA' },
+  { id: '4', name: 'Yale University', requiredScore: 92, ranking: 5, acceptanceRate: 6.9, location: 'New Haven, CT' },
+  { id: '5', name: 'Princeton University', requiredScore: 91, ranking: 1, acceptanceRate: 5.8, location: 'Princeton, NJ' },
+  
+  // Top Public & Private (Hard)
+  { id: '6', name: 'UC Berkeley', requiredScore: 85, ranking: 22, acceptanceRate: 17.5, location: 'Berkeley, CA' },
+  { id: '7', name: 'UCLA', requiredScore: 84, ranking: 20, acceptanceRate: 14.3, location: 'Los Angeles, CA' },
+  { id: '8', name: 'University of Michigan', requiredScore: 82, ranking: 21, acceptanceRate: 26.0, location: 'Ann Arbor, MI' },
+  { id: '9', name: 'Northwestern University', requiredScore: 88, ranking: 9, acceptanceRate: 9.3, location: 'Evanston, IL' },
+  { id: '10', name: 'Duke University', requiredScore: 89, ranking: 10, acceptanceRate: 8.9, location: 'Durham, NC' },
+  
+  // Competitive (Medium-Hard)
+  { id: '11', name: 'NYU', requiredScore: 78, ranking: 28, acceptanceRate: 21.1, location: 'New York, NY' },
+  { id: '12', name: 'Boston University', requiredScore: 76, ranking: 41, acceptanceRate: 22.1, location: 'Boston, MA' },
+  { id: '13', name: 'University of Southern California', requiredScore: 80, ranking: 25, acceptanceRate: 16.1, location: 'Los Angeles, CA' },
+  { id: '14', name: 'Carnegie Mellon University', requiredScore: 86, ranking: 25, acceptanceRate: 17.3, location: 'Pittsburgh, PA' },
+  { id: '15', name: 'University of Virginia', requiredScore: 79, ranking: 25, acceptanceRate: 26.4, location: 'Charlottesville, VA' },
+  
+  // Good Schools (Medium)
+  { id: '16', name: 'Penn State', requiredScore: 70, ranking: 63, acceptanceRate: 76.0, location: 'University Park, PA' },
+  { id: '17', name: 'University of Florida', requiredScore: 72, ranking: 28, acceptanceRate: 37.0, location: 'Gainesville, FL' },
+  { id: '18', name: 'Ohio State University', requiredScore: 68, ranking: 49, acceptanceRate: 68.0, location: 'Columbus, OH' },
+  { id: '19', name: 'University of Washington', requiredScore: 74, ranking: 59, acceptanceRate: 56.0, location: 'Seattle, WA' },
+  { id: '20', name: 'University of Illinois', requiredScore: 73, ranking: 47, acceptanceRate: 63.0, location: 'Urbana-Champaign, IL' },
+  
+  // Accessible Schools (Easy-Medium)
+  { id: '21', name: 'Arizona State University', requiredScore: 62, ranking: 117, acceptanceRate: 88.0, location: 'Tempe, AZ' },
+  { id: '22', name: 'University of Arizona', requiredScore: 60, ranking: 124, acceptanceRate: 87.0, location: 'Tucson, AZ' },
+  { id: '23', name: 'Florida State University', requiredScore: 65, ranking: 55, acceptanceRate: 37.0, location: 'Tallahassee, FL' },
+  { id: '24', name: 'University of Colorado Boulder', requiredScore: 64, ranking: 99, acceptanceRate: 84.0, location: 'Boulder, CO' },
+  { id: '25', name: 'San Diego State University', requiredScore: 58, ranking: 151, acceptanceRate: 38.0, location: 'San Diego, CA' },
 ];
 
 export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ children }) => {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
 
-  const calculateProfileScore = async (profileData: Partial<StudentProfile>): Promise<{score: number, recommendations: SchoolRecommendation[]}> => {
-    try {
-      console.log('Making API request to calculate profile score...');
-      const response = await fetch(`${API_BASE_URL}/calculate-profile-score`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(profileData),
-      });
-      
-      console.log('API response status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API error response:', errorText);
-        throw new Error(`Failed to calculate profile score: ${response.status} ${errorText}`);
-      }
-      
-      const data = await response.json();
-      console.log('API response data:', data);
-      
-      // Transform backend recommendations to frontend format
-      const transformedRecommendations: SchoolRecommendation[] = [];
-      
-      // Process each bucket (Likely, Target, Reach)
-      Object.entries(data.recommendations || {}).forEach(([bucket, schools]) => {
-        (schools as any[]).forEach((school) => {
-          const category = bucket.toLowerCase() === 'likely' ? 'safety' : 
-                          bucket.toLowerCase() === 'target' ? 'target' : 'reach';
-          
-          transformedRecommendations.push({
-            universityId: school.name.replace(/\s+/g, '').toLowerCase(),
-            category: category as 'safety' | 'target' | 'reach',
-            admissionChance: school.competitivenessScore / 100,
-            strengthenAreas: [`Improve ${bucket.toLowerCase()} profile areas`],
-            requiredScore: 80, // Default, can be refined
-            comparisonRatio: school.competitivenessScore / 100
-          });
-        });
-      });
-      
-      return {
-        score: data.rigor_score,
-        recommendations: transformedRecommendations
-      };
-    } catch (error) {
-      console.error('Error calculating profile score:', error);
-      // Re-throw the error so it can be handled by the calling function
-      throw error;
+  // Mock rigor score calculation based on academic factors
+  const calculateRigorScore = (profileData: Partial<StudentProfile>): number => {
+    let score = 0;
+    
+    // GPA component (40% of score)
+    const gpa = profileData.gpa || 0;
+    const gpaScore = Math.min((gpa / 4.0) * 40, 40);
+    score += gpaScore;
+    
+    // SAT component (30% of score)
+    const satTotal = (profileData.satEBRW || 0) + (profileData.satMath || 0);
+    const satScore = Math.min((satTotal / 1600) * 30, 30);
+    score += satScore;
+    
+    // ACT component (alternative to SAT, 30% of score)
+    if (satTotal === 0 && profileData.actScore) {
+      const actScore = Math.min((profileData.actScore / 36) * 30, 30);
+      score += actScore;
     }
+    
+    // AP courses bonus (up to 15 points)
+    const apBonus = Math.min((profileData.apCourses || 0) * 2, 15);
+    score += apBonus;
+    
+    // IB score bonus (up to 10 points)
+    if (profileData.ibScore && profileData.ibScore >= 35) {
+      const ibBonus = Math.min(((profileData.ibScore - 35) / 10) * 10, 10);
+      score += ibBonus;
+    }
+    
+    // TOEFL penalty for international students with low scores
+    if (profileData.citizenship === 'international' && profileData.toeflScore && profileData.toeflScore < 100) {
+      score -= (100 - profileData.toeflScore) * 0.2;
+    }
+    
+    return Math.max(0, Math.min(100, Math.round(score)));
   };
 
+  const calculateProfileScore = async (profileData: Partial<StudentProfile>): Promise<{score: number, recommendations: SchoolRecommendation[]}> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    console.log('Mock: Calculating profile score for:', profileData);
+    
+    const score = calculateRigorScore(profileData);
+    const recommendations = generateRecommendations(score);
+    
+    console.log('Mock: Calculated score:', score);
+    console.log('Mock: Generated recommendations:', recommendations);
+    
+    return { score, recommendations };
+  };
 
-  const updateProfile = async (newProfileData: Partial<StudentProfile>) => {
+  const generateRecommendations = (profileScore: number): SchoolRecommendation[] => {
+    const recommendations: SchoolRecommendation[] = [];
+    
+    universitiesDatabase.forEach(school => {
+      const comparisonRatio = profileScore / school.requiredScore;
+      let category: 'safety' | 'target' | 'reach';
+      let admissionChance: number;
+      const strengthenAreas: string[] = [];
+
+      if (comparisonRatio >= 1.15) {
+        category = 'safety';
+        admissionChance = Math.min(85, 70 + (comparisonRatio - 1) * 30);
+      } else if (comparisonRatio >= 0.85) {
+        category = 'target';
+        admissionChance = Math.min(65, 35 + (comparisonRatio - 0.85) * 100);
+      } else {
+        category = 'reach';
+        admissionChance = Math.max(5, comparisonRatio * 40);
+        
+        // Suggest areas to strengthen for reach schools
+        if (profileScore < 70) strengthenAreas.push('Overall Academic Profile');
+        if (profileScore < 80) strengthenAreas.push('Standardized Test Scores');
+        if (profileScore < 85) strengthenAreas.push('Advanced Coursework (AP/IB)');
+      }
+
+      recommendations.push({
+        universityId: school.name,
+        category,
+        admissionChance: Math.round(admissionChance) / 100,
+        strengthenAreas,
+        requiredScore: school.requiredScore,
+        comparisonRatio: Math.round(comparisonRatio * 100) / 100,
+      });
+    });
+
+    // Sort by category and then by admission chance
+    const categoryOrder = { 'safety': 0, 'target': 1, 'reach': 2 };
+    recommendations.sort((a, b) => {
+      if (a.category !== b.category) {
+        return categoryOrder[a.category] - categoryOrder[b.category];
+      }
+      return b.admissionChance - a.admissionChance;
+    });
+
+    // Limit to top recommendations per category
+    const safetySchools = recommendations.filter(r => r.category === 'safety').slice(0, 8);
+    const targetSchools = recommendations.filter(r => r.category === 'target').slice(0, 8);
+    const reachSchools = recommendations.filter(r => r.category === 'reach').slice(0, 8);
+
+    return [...safetySchools, ...targetSchools, ...reachSchools];
+  };
+
+  const updateProfile = async (newProfileData: Partial<StudentProfile>): Promise<StudentProfile> => {
+    console.log('Mock: Updating profile with data:', newProfileData);
+    
     const updatedProfile = profile ? { ...profile, ...newProfileData } : {
       gpa: 0,
       satEBRW: 0,
@@ -229,105 +301,36 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
     };
     
     try {
-      // Calculate profile rigor score and get recommendations from backend
+      // Calculate profile rigor score and get recommendations
       const result = await calculateProfileScore(updatedProfile);
       updatedProfile.profileRigorScore = result.score;
       updatedProfile.recommendations = result.recommendations;
       
       // Update profile with calculated score and recommendations
       setProfile(updatedProfile);
+      console.log('Mock: Profile updated successfully:', updatedProfile);
       return updatedProfile;
     } catch (error) {
-      console.error('Error updating profile:', error);
-      // Still update profile even if score calculation fails
-      updatedProfile.recommendations = generateRecommendations(updatedProfile);
-      setProfile(updatedProfile);
-      return updatedProfile;
+      console.error('Mock: Error updating profile:', error);
+      throw error;
     }
   };
 
-  const generateRecommendations = (profile: StudentProfile): SchoolRecommendation[] => {
-    return schoolsDatabase.map(school => {
-      const comparisonRatio = profile.profileRigorScore / school.requiredScore;
-      let category: 'safety' | 'target' | 'reach';
-      let admissionChance: number;
-      const strengthenAreas: string[] = [];
-
-      if (comparisonRatio >= 1.1) {
-        category = 'safety';
-        admissionChance = Math.min(85, 70 + (comparisonRatio - 1) * 50);
-      } else if (comparisonRatio >= 0.9) {
-        category = 'target';
-        admissionChance = Math.min(65, 40 + (comparisonRatio - 0.9) * 125);
-      } else {
-        category = 'reach';
-        admissionChance = Math.max(5, comparisonRatio * 30);
-        
-        // Suggest areas to strengthen
-        if (profile.gpa < 3.7) strengthenAreas.push('GPA');
-        if ((profile.satEBRW + profile.satMath) < 1400 && profile.actScore < 30) {
-          strengthenAreas.push('Standardized Test Scores');
-        }
-        if (profile.extracurriculars.length < 3) {
-          strengthenAreas.push('Extracurricular Activities');
-        }
-        if (!profile.personalStatement || profile.personalStatement.length < 300) {
-          strengthenAreas.push('Personal Statement');
-        }
-      }
-
-      return {
-        universityId: school.id,
-        category,
-        admissionChance: Math.round(admissionChance),
-        strengthenAreas,
-        requiredScore: school.requiredScore,
-        comparisonRatio: Math.round(comparisonRatio * 100) / 100,
-      };
-    });
-  };
-
-  const searchSchools = async (query: string): Promise<SchoolSearchResult[]> => {
+  const searchSchools = (query: string): SchoolSearchResult[] => {
     if (!profile || !query.trim()) return [];
     
-    try {
-      const response = await fetch(`${API_BASE_URL}/search-schools`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query,
-          student_data: profile,
-        }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to search schools');
-      }
-      
-      const data = await response.json();
-      return data.results;
-    } catch (error) {
-      console.error('Error searching schools:', error);
-      // Fallback to local search if backend is unavailable
-      return searchSchoolsLocal(query);
-    }
-  };
-
-  const searchSchoolsLocal = (query: string): SchoolSearchResult[] => {
-    // Fallback local search
-    const filteredSchools = schoolsDatabase.filter(school =>
-      school.name.toLowerCase().includes(query.toLowerCase())
+    const filteredSchools = universitiesDatabase.filter(school =>
+      school.name.toLowerCase().includes(query.toLowerCase()) ||
+      school.location.toLowerCase().includes(query.toLowerCase())
     );
 
     return filteredSchools.map(school => {
-      const comparisonRatio = profile!.profileRigorScore / school.requiredScore;
+      const comparisonRatio = profile.profileRigorScore / school.requiredScore;
       let category: 'safety' | 'target' | 'reach';
 
-      if (comparisonRatio >= 1.1) {
+      if (comparisonRatio >= 1.15) {
         category = 'safety';
-      } else if (comparisonRatio >= 0.9) {
+      } else if (comparisonRatio >= 0.85) {
         category = 'target';
       } else {
         category = 'reach';
