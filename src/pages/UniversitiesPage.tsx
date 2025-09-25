@@ -337,7 +337,7 @@ const UniversitiesPage: React.FC = () => {
           {filteredUniversities.map(university => (
             <div
               key={university.id}
-              className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden ${
+              className={`bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden ${
                 viewMode === 'list' ? 'flex' : ''
               }`}
             >
