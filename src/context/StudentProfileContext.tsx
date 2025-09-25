@@ -204,18 +204,15 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
     universitiesDatabase.forEach(school => {
       const comparisonRatio = profileScore / school.requiredScore;
       let category: 'safety' | 'target' | 'reach';
-      let admissionChance: number;
       const strengthenAreas: string[] = [];
 
-      if (comparisonRatio >= 1.15) {
+      // More realistic categorization
+      if (comparisonRatio >= 1.1) {
         category = 'safety';
-        admissionChance = Math.min(85, 70 + (comparisonRatio - 1) * 30);
-      } else if (comparisonRatio >= 0.85) {
+      } else if (comparisonRatio >= 0.9) {
         category = 'target';
-        admissionChance = Math.min(65, 35 + (comparisonRatio - 0.85) * 100);
       } else {
         category = 'reach';
-        admissionChance = Math.max(5, comparisonRatio * 40);
         
         // Suggest areas to strengthen for reach schools
         if (profileScore < 70) strengthenAreas.push('Overall Academic Profile');
@@ -223,10 +220,24 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
         if (profileScore < 85) strengthenAreas.push('Advanced Coursework (AP/IB)');
       }
 
+      // Calculate a more realistic profile match percentage
+      let profileMatchPercentage: number;
+      
+      if (category === 'safety') {
+        // Safety schools: 75-95% match (you're well-qualified)
+        profileMatchPercentage = Math.min(95, 75 + (comparisonRatio - 1.1) * 50);
+      } else if (category === 'target') {
+        // Target schools: 60-85% match (good fit)
+        profileMatchPercentage = 60 + (comparisonRatio - 0.9) * 125;
+      } else {
+        // Reach schools: 30-70% match (below typical profile)
+        profileMatchPercentage = Math.max(30, comparisonRatio * 70);
+      }
+
       recommendations.push({
         universityId: school.name,
         category,
-        admissionChance: Math.round(admissionChance) / 100,
+        admissionChance: profileMatchPercentage / 100, // Store as decimal for compatibility
         strengthenAreas,
         requiredScore: school.requiredScore,
         comparisonRatio: Math.round(comparisonRatio * 100) / 100,
@@ -239,7 +250,7 @@ export const StudentProfileProvider: React.FC<StudentProfileProviderProps> = ({ 
       if (a.category !== b.category) {
         return categoryOrder[a.category] - categoryOrder[b.category];
       }
-      return b.admissionChance - a.admissionChance;
+      return b.admissionChance - a.admissionChance; // Higher match percentage first
     });
 
     // Limit to top recommendations per category
