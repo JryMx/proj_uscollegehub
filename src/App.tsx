@@ -6,7 +6,6 @@ import UniversityProfilePage from './pages/UniversityProfilePage';
 import StudentProfilePage from './pages/StudentProfilePage';
 import DashboardPage from './pages/DashboardPage';
 import ConsultingPage from './pages/ConsultingPage';
-import ComparePage from './pages/ComparePage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import { AuthProvider } from './context/AuthContext';
@@ -28,7 +27,6 @@ function App() {
                 <Route path="/student-profile" element={<StudentProfilePage />} />
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/consulting" element={<ConsultingPage />} />
-                <Route path="/compare" element={<ComparePage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
               </Routes>

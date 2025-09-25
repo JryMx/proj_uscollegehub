@@ -48,12 +48,6 @@ const Navbar: React.FC = () => {
             >
               Consulting
             </Link>
-            <Link
-              to="/compare"
-              className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              Compare
-            </Link>
 
             {/* Theme Toggle */}
             <button
@@ -148,13 +142,6 @@ const Navbar: React.FC = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Consulting
-              </Link>
-              <Link
-                to="/compare"
-                className="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Compare
               </Link>
               
               {/* Mobile Theme Toggle */}
