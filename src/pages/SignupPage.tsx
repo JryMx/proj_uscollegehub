@@ -109,7 +109,7 @@ const SignupPage: React.FC = () => {
                   onChange={handleChange}
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                     errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
-                  }`}
+                  } bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
                   placeholder="Full name"
                 />
               </div>
@@ -132,7 +132,7 @@ const SignupPage: React.FC = () => {
                   onChange={handleChange}
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                     errors.email ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
-                  }`}
+                  } bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
                   placeholder="Email address"
                 />
               </div>
@@ -155,7 +155,7 @@ const SignupPage: React.FC = () => {
                   onChange={handleChange}
                   className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                     errors.password ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
-                  }`}
+                  } bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
                   placeholder="Password"
                 />
                 <button
@@ -185,7 +185,7 @@ const SignupPage: React.FC = () => {
                   onChange={handleChange}
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                     errors.confirmPassword ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
-                  }`}
+                  } bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
                   placeholder="Confirm password"
                 />
               </div>
