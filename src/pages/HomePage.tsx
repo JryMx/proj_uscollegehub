@@ -22,13 +22,13 @@ const HomePage: React.FC = () => {
                 to="/student-profile"
                 className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
               >
-                Start Profile Analysis
+                Analyze Your Profile
               </Link>
               <Link
-                to="/universities"
+                to="/consulting"
                 className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white border-2 border-white border-opacity-50 px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 backdrop-blur-sm"
               >
-                Browse Universities
+                Find Consulting
               </Link>
             </div>
           </div>
@@ -50,31 +50,13 @@ const HomePage: React.FC = () => {
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center p-8 rounded-xl bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-              <div className="bg-blue-100 dark:bg-blue-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Search className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">University Database</h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Access detailed information about hundreds of U.S. universities including 
-                admission requirements, deadlines, and program details.
-              </p>
-              <Link
-                to="/universities"
-                className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
-              >
-                Explore Universities
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </div>
-
-            <div className="text-center p-8 rounded-xl bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
               <div className="bg-green-100 dark:bg-green-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Target className="h-8 w-8 text-green-600" />
               </div>
               <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Profile Analysis</h3>
               <p className="text-gray-600 dark:text-gray-300 mb-6">
                 AI-powered analysis of your academic profile to categorize schools into 
-                safety, target, and reach categories with match scores.
+                safety, target, and reach categories with personalized match scores.
               </p>
               <Link
                 to="/student-profile"
@@ -92,13 +74,31 @@ const HomePage: React.FC = () => {
               <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Consulting Programs</h3>
               <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Find and compare consulting programs that can help strengthen your profile 
-                for your target universities.
+                and improve your chances at your target universities.
               </p>
               <Link
                 to="/consulting"
                 className="inline-flex items-center text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-medium"
               >
                 Find Consultants
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="text-center p-8 rounded-xl bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+              <div className="bg-blue-100 dark:bg-blue-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Search className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">University Database</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Access detailed information about 200+ U.S. universities including 
+                admission requirements, deadlines, and program details.
+              </p>
+              <Link
+                to="/universities"
+                className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+              >
+                Explore Universities
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </div>
@@ -119,17 +119,17 @@ const HomePage: React.FC = () => {
             </div>
             <div className="p-8">
               <div className="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Trophy className="h-8 w-8" />
+                <Target className="h-8 w-8" />
               </div>
-              <div className="text-4xl font-bold mb-2">85%</div>
-              <div className="text-gray-300">Success Rate</div>
+              <div className="text-4xl font-bold mb-2">200+</div>
+              <div className="text-gray-300">Universities Tracked</div>
             </div>
             <div className="p-8">
               <div className="bg-orange-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Globe className="h-8 w-8" />
+                <Users className="h-8 w-8" />
               </div>
-              <div className="text-4xl font-bold mb-2">50+</div>
-              <div className="text-gray-300">Countries Served</div>
+              <div className="text-4xl font-bold mb-2">25+</div>
+              <div className="text-gray-300">Consulting Programs</div>
             </div>
           </div>
         </div>
@@ -153,10 +153,10 @@ const HomePage: React.FC = () => {
               Get Started Free
             </Link>
             <Link
-              to="/universities"
+              to="/student-profile"
               className="bg-transparent hover:bg-blue-500 dark:hover:bg-blue-700 text-white border-2 border-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300"
             >
-              Browse Universities
+              Analyze Profile
             </Link>
           </div>
         </div>
