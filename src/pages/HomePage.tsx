@@ -121,8 +121,8 @@ const HomePage: React.FC = () => {
               <div className="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Target className="h-8 w-8" />
               </div>
-              <div className="text-4xl font-bold mb-2">200+</div>
-              <div className="text-gray-300">Universities Tracked</div>
+              <div className="text-4xl font-bold mb-2">10,000+</div>
+              <div className="text-gray-300">Students Helped</div>
             </div>
             <div className="p-8">
               <div className="bg-orange-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
