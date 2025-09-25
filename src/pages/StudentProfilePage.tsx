@@ -140,16 +140,14 @@ const StudentProfilePage: React.FC = () => {
                         <h4 className="font-bold text-gray-900 dark:text-white mb-2">{recommendation.universityId}</h4>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-gray-600 dark:text-gray-400">Match Score:</span>
+                            <span className="text-gray-600 dark:text-gray-400">Admission Chance:</span>
                             <span className={`font-medium text-${categoryColor}-600`}>
                               {Math.round(recommendation.admissionChance * 100)}%
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600 dark:text-gray-400">Match Score:</span>
-                            <span className="font-medium text-gray-900 dark:text-white">
-                              {Math.round(recommendation.comparisonRatio * 100)}/100
-                            </span>
+                            <span className="text-gray-600 dark:text-gray-400">Profile Match:</span>
+                            <span className="font-medium text-gray-900 dark:text-white">{recommendation.comparisonRatio}</span>
                           </div>
                           {recommendation.requiredScore && (
                             <div className="flex justify-between">
