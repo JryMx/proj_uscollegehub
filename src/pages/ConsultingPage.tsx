@@ -328,10 +328,10 @@ const ConsultingPage: React.FC = () => {
           {filteredPrograms.map(program => (
             <div
               key={program.id}
-              className={`bg-white rounded-lg shadow-sm p-6 transition-all duration-300 ${
+              className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-all duration-300 ${
                 selectedPrograms.includes(program.id) 
-                  ? 'border-2 border-blue-500 shadow-lg dark:bg-gray-800' 
-                  : 'border border-gray-200 hover:shadow-md dark:bg-gray-800 dark:border-gray-700'
+                  ? 'border-2 border-blue-500 shadow-lg' 
+                  : 'border border-gray-200 hover:shadow-md dark:border-gray-700'
               }`}
             >
               <div className="flex flex-col lg:flex-row gap-6">
@@ -440,7 +440,7 @@ const ConsultingPage: React.FC = () => {
                         onClick={() => toggleProgramSelection(program.id)}
                         className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                           selectedPrograms.includes(program.id)
-                            ? 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+                            ? 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-50\0 dark:hover:bg-blue-600'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                         }`}
                       >
@@ -463,151 +463,6 @@ const ConsultingPage: React.FC = () => {
             <button
               onClick={() => setFilters({ specialty: '', priceRange: '', location: '', rating: '' })}
               className="mt-4 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
-            >
-              Clear all filters
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export default ConsultingPage;
-                selectedPrograms.includes(program.id) 
-                  ? 'border-2 border-blue-500 shadow-lg' 
-                  : 'border border-gray-200 hover:shadow-md'
-              }`}
-            >
-              <div className="flex flex-col lg:flex-row gap-6">
-                {/* Image */}
-                <div className="lg:w-1/4">
-                  <img
-                    src={program.image}
-                    alt={program.name}
-                    className="w-full h-48 lg:h-32 object-cover rounded-lg"
-                  />
-                </div>
-
-                {/* Main Info */}
-                <div className="flex-1">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-1">{program.name}</h3>
-                      <div className="flex items-center text-gray-600 mb-2">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        <span className="text-sm">{program.location}</span>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="flex items-center">
-                          <Star className="h-4 w-4 text-yellow-400 mr-1" />
-                          <span className="text-sm font-medium">{program.rating}</span>
-                          <span className="text-sm text-gray-500 ml-1">({program.reviewCount} reviews)</span>
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {program.studentsHelped} students helped
-                        </div>
-                        <div className="text-sm font-medium text-green-600">
-                          {program.successRate}% success rate
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-blue-600 mb-1">
-                        ₩{(program.price / 1000000).toFixed(1)}M
-                      </div>
-                      <div className="text-sm text-gray-600">{program.duration}</div>
-                    </div>
-                  </div>
-
-                  <p className="text-gray-700 mb-4">{program.description}</p>
-
-                  {/* Specialties */}
-                  <div className="mb-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Specialties:</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {program.specialties.map(specialty => (
-                        <span
-                          key={specialty}
-                          className="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full"
-                        >
-                          {specialty}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Strengths */}
-                  <div className="mb-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Helps strengthen:</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {program.strengths.map(strength => (
-                        <span
-                          key={strength}
-                          className="bg-green-100 text-green-800 text-sm px-2 py-1 rounded-full flex items-center"
-                        >
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          {strength}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Services */}
-                  <div className="mb-6">
-                    <h4 className="font-medium text-gray-900 mb-2">Services included:</h4>
-                    <div className="grid md:grid-cols-2 gap-1">
-                      {program.services.map(service => (
-                        <div key={service} className="flex items-center text-sm text-gray-700">
-                          <div className="w-1 h-1 bg-blue-600 rounded-full mr-2"></div>
-                          {service}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Contact & Actions */}
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-gray-200">
-                    <div className="flex space-x-4 text-sm text-gray-600">
-                      <div className="flex items-center">
-                        <Phone className="h-4 w-4 mr-1" />
-                        {program.contact.phone}
-                      </div>
-                      <div className="flex items-center">
-                        <Mail className="h-4 w-4 mr-1" />
-                        {program.contact.email}
-                      </div>
-                    </div>
-
-                    <div className="flex space-x-3">
-                      <button
-                        onClick={() => toggleProgramSelection(program.id)}
-                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                          selectedPrograms.includes(program.id)
-                            ? 'bg-blue-600 text-white hover:bg-blue-700'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        {selectedPrograms.includes(program.id) ? 'Selected' : 'Select'}
-                      </button>
-                      <button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                        Contact
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredPrograms.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No consulting programs match your current filters.</p>
-            <button
-              onClick={() => setFilters({ specialty: '', priceRange: '', location: '', rating: '' })}
-              className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
             >
               Clear all filters
             </button>
